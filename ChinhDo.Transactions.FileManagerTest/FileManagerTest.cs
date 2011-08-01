@@ -181,7 +181,7 @@ namespace ChinhDo.Transactions.FileManagerTest
             Assert.IsFalse(Directory.Exists(d1), d1 + " should not exist.");
         }
 
-        [Test]
+        [Test, ExpectedException(typeof(TransactionException))]
         public void CannotDeleteNonEmptyDirectory()
         {
             string d1 = _target.GetTempFileName();

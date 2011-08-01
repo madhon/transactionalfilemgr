@@ -1,11 +1,14 @@
-This solution contains Chinh Do's Transactional File Manager. Transaction File Manager 
-allows the inclusion of filesystem operations in a System.Transactions transaction.
+Transactional File Manager is a .NET API that supports including
+file system operations such as file copy, move, delete, append,
+etc. in a transaction. It's an implementation of
+System.Transaction.IEnlistmentNotification (works with
+System.Transactions.TransactionScope).
 
-If you find a bug or have ideas for enhancements, I would love to hear from you.
-Leave your feedback here: http://www.chinhdo.com/20080825/transactional-file-manager/ or
-email: cdo@vienxu.com
+For project info, documentation, examples, and to submit bug
+reports or feedback, use our CodePlex project site:
+http://transactionalfilemgr.codeplex.com/
 
-Copyright (c) 2008 Chinh Do
+Copyright (c) 2011 Chinh Do
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation

@@ -261,7 +261,7 @@ namespace ChinhDo.Transactions
                 {
                     if (IgnoreExceptionsInRollback)
                     {
-                        // TODO EventLog.WriteEntry(GetType().FullName, "Failed to rollback." + Environment.NewLine + e.ToString(), EventLogEntryType.Warning);
+                        // Ignored
                     }
                     else
                     {
@@ -370,7 +370,7 @@ namespace ChinhDo.Transactions
                         }
                         else
                         {
-                            EventLog.WriteEntry(GetType().FullName, "Failed to delete directory " + _path + ". Directory was not empty.", EventLogEntryType.Warning);
+                            throw new Exception("Failed to delete directory " + _path + ". Directory was not empty.");
                         }
                     }
                 }

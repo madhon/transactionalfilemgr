@@ -182,6 +182,18 @@ namespace ChinhDo.Transactions.FileManagerTest
         }
 
         [Test]
+        public void CannotDeleteNonEmptyDirectory()
+        {
+            string d1 = _target.GetTempFileName();
+            using (var scope1 = new TransactionScope())
+            {
+                _target.CreateDirectory(d1);
+                Directory.CreateDirectory(Path.Combine(d1, "subDir"));
+            }
+            Assert.IsFalse(Directory.Exists(d1), d1 + " should not exist.");            
+        }
+
+        [Test]
         public void CanDeleteFile()
         {
             string f1 = _target.GetTempFileName();

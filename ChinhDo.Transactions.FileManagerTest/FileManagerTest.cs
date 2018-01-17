@@ -1,14 +1,15 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Transactions;
-using System.Xml;
-using NUnit.Framework;
-
-namespace ChinhDo.Transactions.FileManagerTest
+﻿namespace ChinhDo.Transactions.FileManagerTest
 {
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Threading;
+    using System.Transactions;
+    using System.Xml;
+    using NUnit.Framework;
+    using Shouldly;
+
     [TestFixture]
-    class FileManagerTest
+    public class FileManagerTest
     {
         private int _numTempFiles;
         private IFileManager _target;
@@ -24,10 +25,9 @@ namespace ChinhDo.Transactions.FileManagerTest
         public void TestCleanup()
         {
             int numTempFiles = Directory.GetFiles(Path.Combine(Path.GetTempPath(), "CdFileMgr")).Length;
-            Assert.AreEqual(_numTempFiles, numTempFiles, "Unexpected value for numTempFiles.");
+            numTempFiles.ShouldBe(_numTempFiles, "Unexpected value for numTempFiles.");
         }
 
-        #region Operations
         [Test]
         public void CanAppendText()
         {
@@ -41,7 +41,7 @@ namespace ChinhDo.Transactions.FileManagerTest
                     _target.AppendAllText(f1, contents);
                     scope1.Complete();
                 }
-                Assert.AreEqual(contents, File.ReadAllText(f1), "Incorrect value for ReadAllText.");
+                File.ReadAllText(f1).ShouldBe(contents, "Incorrect value for ReadAllText.");
             }
             finally
             {
@@ -80,8 +80,7 @@ namespace ChinhDo.Transactions.FileManagerTest
             {
                 _target.AppendAllText(f1, contents);
             }
-
-            Assert.IsFalse(File.Exists(f1), f1 + " should not exist.");
+            File.Exists(f1).ShouldBeFalse(f1 + " should not exist.");
         }
 
         [Test]
@@ -100,8 +99,8 @@ namespace ChinhDo.Transactions.FileManagerTest
                     scope1.Complete();
                 }
 
-                Assert.AreEqual(expectedText, File.ReadAllText(sourceFileName), sourceFileName + " doesn't contain expected text.");
-                Assert.AreEqual(expectedText, File.ReadAllText(destFileName), destFileName + " doesn't contain expected text.");
+                File.ReadAllText(sourceFileName).ShouldBe(expectedText, sourceFileName + " doesn't contain expected text.");
+                File.ReadAllText(destFileName).ShouldBe(expectedText, destFileName + " doesn't contain expected text.");
             }
             finally
             {
@@ -126,7 +125,7 @@ namespace ChinhDo.Transactions.FileManagerTest
                     // rollback
                 }
 
-                Assert.IsFalse(File.Exists(destFileName), destFileName + " should not exist.");
+                File.Exists(destFileName).ShouldBeFalse(destFileName + " should not exist.");
             }
             finally
             {
@@ -146,7 +145,8 @@ namespace ChinhDo.Transactions.FileManagerTest
                     _target.CreateDirectory(d1);
                     scope1.Complete();
                 }
-                Assert.IsTrue(Directory.Exists(d1), d1 + " should exist.");
+
+                Directory.Exists(d1).ShouldBeTrue(d1 + " should exist.");
             }
             finally
             {
@@ -166,7 +166,8 @@ namespace ChinhDo.Transactions.FileManagerTest
             {
                 _target.CreateDirectory(nested1);
             }
-            Assert.IsFalse(Directory.Exists(baseDir), baseDir + " should not exist.");
+
+            Directory.Exists(baseDir).ShouldBeFalse(baseDir + " should not exist.");
         }
 
         [Test]
@@ -177,7 +178,8 @@ namespace ChinhDo.Transactions.FileManagerTest
             {
                 _target.CreateDirectory(d1);
             }
-            Assert.IsFalse(Directory.Exists(d1), d1 + " should not exist.");
+
+            Directory.Exists(d1).ShouldBeFalse(d1 + " should not exist.");
         }
 
         [Test]
@@ -194,7 +196,7 @@ namespace ChinhDo.Transactions.FileManagerTest
                     scope1.Complete();
                 }
 
-                Assert.IsFalse(Directory.Exists(f1), f1 + " should no longer exist.");
+                Directory.Exists(f1).ShouldBeFalse(f1 + " should no longer exist.");
             }
             finally
             {
@@ -218,7 +220,7 @@ namespace ChinhDo.Transactions.FileManagerTest
                     _target.DeleteDirectory(f1);
                 }
 
-                Assert.IsTrue(Directory.Exists(f1), f1 + " should exist.");
+                Directory.Exists(f1).ShouldBeTrue(f1 + " should exist.");
             }
             finally
             {
@@ -244,7 +246,7 @@ namespace ChinhDo.Transactions.FileManagerTest
                     scope1.Complete();
                 }
 
-                Assert.IsFalse(File.Exists(f1), f1 + " should no longer exist.");
+                File.Exists(f1).ShouldBeFalse(f1 + " should no longer exist.");
             }
             finally
             {
@@ -268,9 +270,8 @@ namespace ChinhDo.Transactions.FileManagerTest
                 {
                     _target.Delete(f1);
                 }
-
-                Assert.IsTrue(File.Exists(f1), f1 + " should exist.");
-                Assert.AreEqual(contents, File.ReadAllText(f1), "Unexpected value from ReadAllText.");
+                File.Exists(f1).ShouldBeTrue(f1 + " should exist.");
+                File.ReadAllText(f1).ShouldBe(contents, "Unexpected value from ReadAllText.");
             }
             finally
             {
@@ -290,8 +291,9 @@ namespace ChinhDo.Transactions.FileManagerTest
 
                 using (TransactionScope scope1 = new TransactionScope())
                 {
-                    Assert.IsTrue(File.Exists(f1), "{0} should exist.", f1);
-                    Assert.IsFalse(File.Exists(f2), "{0} should not exist", f2);
+                    File.Exists(f1).ShouldBeTrue($"{f1} should exist.");
+                    File.Exists(f2).ShouldBeFalse($"{f2} should not exist.");
+
                     _target.Move(f1, f2);
                     scope1.Complete();
                 }
@@ -315,13 +317,13 @@ namespace ChinhDo.Transactions.FileManagerTest
 
                 using (TransactionScope scope1 = new TransactionScope())
                 {
-                    Assert.IsTrue(File.Exists(f1), "{0} should exist.", f1);
-                    Assert.IsFalse(File.Exists(f2), "{0} should not exist", f2);
+                    File.Exists(f1).ShouldBeTrue($"{f1} should exist.");
+                    File.Exists(f2).ShouldBeFalse($"{f2} should not exist.");
                     _target.Move(f1, f2);
                 }
 
-                Assert.AreEqual(contents, File.ReadAllText(f1), "ReadAllText returns unexpected value.");
-                Assert.IsFalse(File.Exists(f2), "{0} should not exist.", f2);
+                File.ReadAllText(f1).ShouldBe(contents, "ReadAllText returns unexpected value.");
+                File.Exists(f2).ShouldBeFalse($"{f2} should not exist.");
             }
             finally
             {
@@ -344,7 +346,7 @@ namespace ChinhDo.Transactions.FileManagerTest
                 xmlDoc.Load(f1);
             }
 
-            Assert.IsFalse(File.Exists(f1), f1 + " should not exist.");
+            File.Exists(f1).ShouldBeFalse($"{f1} should not exist.");
         }
 
         [Test]
@@ -362,7 +364,7 @@ namespace ChinhDo.Transactions.FileManagerTest
                     scope1.Complete();
                 }
 
-                Assert.AreEqual(contents, File.ReadAllText(f1), "Unexpected value from ReadAllText.");
+                File.ReadAllText(f1).ShouldBe(contents, "ReadAllText returns unexpected value.");
             }
             finally
             {
@@ -385,7 +387,7 @@ namespace ChinhDo.Transactions.FileManagerTest
                     _target.WriteAllText(f1, contents2);
                 }
 
-                Assert.AreEqual(contents1, File.ReadAllText(f1), "Unexpected value from ReadAllText.");
+                File.ReadAllText(f1).ShouldBe(contents1, "ReadAllText returns unexpected value.");
             }
             finally
             {
@@ -407,7 +409,7 @@ namespace ChinhDo.Transactions.FileManagerTest
                     scope1.Complete();
                 }
 
-                Assert.IsFalse(Directory.Exists(f1), f1 + " should no longer exist.");
+                Directory.Exists(f1).ShouldBeFalse($"{f1} should no longer exist.");
             }
             finally
             {
@@ -417,10 +419,6 @@ namespace ChinhDo.Transactions.FileManagerTest
                 }
             }            
         }
-
-        #endregion
-
-        #region Error Handling
 
         [Test]
         public void CanHandleCopyErrors()
@@ -457,10 +455,6 @@ namespace ChinhDo.Transactions.FileManagerTest
                 File.Delete(f2);
             }
         }
-
-        #endregion
-
-        #region Transaction Support
 
         [Test, ExpectedException(typeof(TransactionException))]
         public void CannotRollback()
@@ -506,7 +500,7 @@ namespace ChinhDo.Transactions.FileManagerTest
                         // rollback
                     }
 
-                    Assert.IsFalse(File.Exists(destFileName), destFileName + " should not exist.");
+                    File.Exists(destFileName).ShouldBeFalse($"{destFileName} should not exist.");
                 }
                 finally
                 {
@@ -529,7 +523,7 @@ namespace ChinhDo.Transactions.FileManagerTest
                         // rollback
                     }
 
-                    Assert.IsFalse(File.Exists(destFileName), destFileName + " should not exist.");
+                    File.Exists(destFileName).ShouldBeFalse($"{destFileName} should not exist.");
                 }
                 finally
                 {
@@ -551,7 +545,7 @@ namespace ChinhDo.Transactions.FileManagerTest
                     _target.WriteAllText(f1, contents);
                 }
 
-                Assert.AreEqual(contents, File.ReadAllText(f1), "ReadAllText returns incorrect value.");
+                File.ReadAllText(f1).ShouldBe(contents, "ReadAllText returns incorrect value.");
             }
             finally
             {
@@ -619,9 +613,10 @@ namespace ChinhDo.Transactions.FileManagerTest
                     sc1.Dispose();
                 }
 
-                Assert.IsFalse(File.Exists(f1), "{0} should not exist.", f1);
-                Assert.IsFalse(File.Exists(f2), "{0} should not exist.", f2);
-                Assert.IsTrue(File.Exists(f3), "{0} should exist.", f3);
+
+                File.Exists(f1).ShouldBeFalse($"{f1} should not exist");
+                File.Exists(f2).ShouldBeFalse($"{f2} should not exist");
+                File.Exists(f3).ShouldBeTrue($"{f3} should exist");
             }
             finally
             {
@@ -630,7 +625,5 @@ namespace ChinhDo.Transactions.FileManagerTest
                 File.Delete(f3);
             }
         }
-
-        #endregion
     }
 }

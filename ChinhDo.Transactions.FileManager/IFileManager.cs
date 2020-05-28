@@ -23,11 +23,21 @@ namespace ChinhDo.Transactions
         /// Creates a temporary file name. The file is not automatically created.
         /// </summary>
         /// <param name="extension">File extension (with the dot).</param>
-        string GetTempFileName(string extension);
+        string CreateTempFileName(string extension);
 
         /// <summary>
-        /// Gets a temporary filename. The file is not automatically created.
+        /// Creates a temporary filename. The file is not automatically created.
         /// </summary>
-        string GetTempFileName();
+        string CreateTempFileName();
+
+        /// <summary>Creates a temporary directory.</summary>
+        /// <returns>The path to the newly created temporary directory.</returns>
+        string CreateTempDirectory();
+
+        /// <summary>Create a temporary directory name.</summary>
+        /// <param name="parentDirectory">The parent directory.</param>
+        /// <param name="prefix">The prefix of the directory name.</param>
+        /// <returns>Path to the temporary directory. The temporary directory is created automatically.</returns>
+        string CreateTempDirectory(string parentDirectory, string prefix);
     }
 }

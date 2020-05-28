@@ -6,29 +6,33 @@ using System.Transactions;
 namespace ChinhDo.Transactions
 {
     /// <summary>
-    /// File Resource Manager. Allows inclusion of file system operations in transactions.
+    /// File Resource Manager. Allows inclusion of file system operations in transactions (<see cref="System.Transactions"/>).
     /// http://www.chinhdo.com/20080825/transactional-file-manager/
     /// </summary>
     public class TxFileManager : IFileManager
     {
-        /// <summary>
-        /// Initializes the <see cref="TxFileManager"/> class.
-        /// </summary>
-        public TxFileManager()
+        /// <summary>Create a new instance of <see cref="TxFileManager"/> class. Feel free to create new instances or re-use existing instances./// </summary>
+        /// ///<param name="tempPath">Path to temp directory.</param>
+        public TxFileManager() : this(Path.GetTempPath())
         {
-            FileUtils.EnsureTempFolderExists();
+
+        }
+
+        /// <summary>Create a new instance of <see cref="TxFileManager"/> class. Feel free to create new instances or re-use existing instances./// </summary>
+        ///<param name="tempPath">Path to temp directory.</param>
+        public TxFileManager(string tempPath)
+        {
+            this._tempPath = Path.Combine(tempPath, "TxFileMgr-fc4eed76ee9b");
+            Directory.CreateDirectory(_tempPath); // This will create folder if neccessary
         }
 
         #region IFileOperations
 
-        /// <summary>Appends the specified string the file, creating the file if it doesn't already exist.</summary>
-        /// <param name="path">The file to append the string to.</param>
-        /// <param name="contents">The string to append to the file.</param>
         public void AppendAllText(string path, string contents)
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new AppendAllTextOperation(path, contents));
+                EnlistOperation(new AppendAllTextOperation(this.GetTempPath(), path, contents));
             }
             else
             {
@@ -36,15 +40,11 @@ namespace ChinhDo.Transactions
             }
         }
 
-        /// <summary>Copies the specified <paramref name="sourceFileName"/> to <paramref name="destFileName"/>.</summary>
-        /// <param name="sourceFileName">The file to copy.</param>
-        /// <param name="destFileName">The name of the destination file.</param>
-        /// <param name="overwrite">true if the destination file can be overwritten, otherwise false.</param>
         public void Copy(string sourceFileName, string destFileName, bool overwrite)
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new CopyOperation(sourceFileName, destFileName, overwrite));
+                EnlistOperation(new CopyOperation(this.GetTempPath(), sourceFileName, destFileName, overwrite));
             }
             else
             {
@@ -52,13 +52,11 @@ namespace ChinhDo.Transactions
             }
         }
 
-        /// <summary>Creates all directories in the specified path.</summary>
-        /// <param name="path">The directory path to create.</param>
         public void CreateDirectory(string path)
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new CreateDirectoryOperation(path));
+                EnlistOperation(new CreateDirectoryOperation(GetTempPath(), path));
             }
             else
             {
@@ -66,13 +64,11 @@ namespace ChinhDo.Transactions
             }
         }
 
-        /// <summary>Deletes the specified file. An exception is not thrown if the file does not exist.</summary>
-        /// <param name="path">The file to be deleted.</param>
         public void Delete(string path)
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new DeleteFileOperation(path));
+                EnlistOperation(new DeleteFileOperation(this.GetTempPath(), path));
             }
             else
             {
@@ -80,13 +76,11 @@ namespace ChinhDo.Transactions
             }
         }
 
-        /// <summary>Deletes the specified directory and all its contents. An exception is not thrown if the directory does not exist.</summary>
-        /// <param name="path">The directory to be deleted.</param>
         public void DeleteDirectory(string path)
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new DeleteDirectoryOperation(path));
+                EnlistOperation(new DeleteDirectoryOperation(GetTempPath(), path));
             }
             else
             {
@@ -94,14 +88,11 @@ namespace ChinhDo.Transactions
             }
         }
 
-        /// <summary>Moves the specified file to a new location.</summary>
-        /// <param name="srcFileName">The name of the file to move.</param>
-        /// <param name="destFileName">The new path for the file.</param>
         public void Move(string srcFileName, string destFileName)
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new MoveOperation(srcFileName, destFileName));
+                EnlistOperation(new MoveFileOperation(this.GetTempPath(), srcFileName, destFileName));
             }
             else
             {
@@ -109,24 +100,19 @@ namespace ChinhDo.Transactions
             }
         }
 
-        /// <summary>Take a snapshot of the specified file. The snapshot is used to rollback the file later if needed.</summary>
-        /// <param name="fileName">The file to take a snapshot for.</param>
         public void Snapshot(string fileName)
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new SnapshotOperation(fileName));
+                EnlistOperation(new SnapshotOperation(this.GetTempPath(), fileName));
             }
         }
 
-        /// <summary>Creates a file, write the specified <paramref name="contents"/> to the file.</summary>
-        /// <param name="path">The file to write to.</param>
-        /// <param name="contents">The string to write to the file.</param>
         public void WriteAllText(string path, string contents)
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new WriteAllTextOperation(path, contents));
+                EnlistOperation(new WriteAllTextOperation(this.GetTempPath(), path, contents));
             }
             else
             {
@@ -134,14 +120,11 @@ namespace ChinhDo.Transactions
             }
         }
 
-        /// <summary>Creates a file, write the specified <paramref name="contents"/> to the file.</summary>
-        /// <param name="path">The file to write to.</param>
-        /// <param name="contents">The bytes to write to the file.</param>
         public void WriteAllBytes(string path, byte[] contents)
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new WriteAllBytesOperation(path, contents));
+                EnlistOperation(new WriteAllBytesOperation(this.GetTempPath(), path, contents));
             }
             else
             {
@@ -193,51 +176,59 @@ namespace ChinhDo.Transactions
             }
         }
 
-        /// <summary>Creates a temporary file name. File is not automatically created.</summary>
-        /// <param name="extension">File extension (with the dot).</param>
-        public string GetTempFileName(string extension)
+        public string CreateTempFileName(string extension)
         {
-            string retVal = FileUtils.GetTempFileName(extension);
-
-            Snapshot(retVal);
-
-            return retVal;
+            Guid g = Guid.NewGuid();
+            string tempFolder = GetTempPath();
+            string ret = Path.Combine(tempFolder, g.ToString().Substring(0, 16)) + extension;
+            Snapshot(ret);
+            return ret;
         }
 
-        /// <summary>Creates a temporary file name. File is not automatically created.</summary>
-        public string GetTempFileName()
+        public string CreateTempFileName()
         {
-            return GetTempFileName(".tmp");
+            return CreateTempFileName(".tmp");
         }
 
-        /// <summary>Gets a temporary directory.</summary>
-        /// <returns>The path to the newly created temporary directory.</returns>
-        public string GetTempDirectory()
+        public string CreateTempDirectory()
         {
-            return GetTempDirectory(Path.GetTempPath(), string.Empty);
+            return CreateTempDirectory(GetTempPath(), string.Empty);
         }
 
-        /// <summary>Gets a temporary directory.</summary>
-        /// <param name="parentDirectory">The parent directory.</param>
-        /// <param name="prefix">The prefix of the directory name.</param>
-        /// <returns>Path to the temporary directory. The temporary directory is created automatically.</returns>
-        public string GetTempDirectory(string parentDirectory, string prefix)
+        public string CreateTempDirectory(string parentDirectory, string prefix)
         {
             Guid g = Guid.NewGuid();
             string dirName = Path.Combine(parentDirectory, prefix + g.ToString().Substring(0, 16));
 
+            // TODO SnapShot Directory
             CreateDirectory(dirName);
 
             return dirName;
+        }
+
+        /// <summary>
+        /// Gets the folder where we should store temporary files and folders. Override this if you want your own impl.
+        /// </summary>
+        /// <returns></returns>
+        public string GetTempPath()
+        {
+            return this._tempPath;
+        }
+
+        /// <summary>Get the count of _enlistments</summary>
+        /// <returns></returns>
+        public static int GetEnlistmentCount()
+        {
+            return _enlistments.Count;
         }
 
         #region Private
 
         /// <summary>Dictionary of transaction enlistment objects for the current thread.</summary>
         [ThreadStatic]
-        private static Dictionary<string, TxEnlistment> _enlistments;
-
-        private static readonly object _enlistmentsLock = new object();
+        internal static Dictionary<string, TxEnlistment> _enlistments;
+        internal static readonly object _enlistmentsLock = new object();
+        private string _tempPath = null;
 
         private static bool IsInTransaction()
         {
@@ -261,6 +252,7 @@ namespace ChinhDo.Transactions
                     enlistment = new TxEnlistment(tx);
                     _enlistments.Add(tx.TransactionInformation.LocalIdentifier, enlistment);
                 }
+
                 enlistment.EnlistOperation(operation);
             }
         }

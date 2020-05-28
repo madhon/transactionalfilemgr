@@ -5,13 +5,12 @@ namespace ChinhDo.Transactions
     /// <summary>
     /// Rollbackable operation which takes a snapshot of a file. The snapshot is used to rollback the file later if needed.
     /// </summary>
-    sealed class SnapshotOperation: SingleFileOperation
+    sealed class SnapshotOperation : SingleFileOperation
     {
-        /// <summary>
-        /// Instantiates the class.
-        /// </summary>
+        /// <summary>Instantiates the class.</summary>
+        /// <param name="tempPath">Path to temp directory.</param>
         /// <param name="path">The file to take a snapshot for.</param>
-        public SnapshotOperation(string path) : base(path)
+        public SnapshotOperation(string tempPath, string path) : base(tempPath, path)
         {
         }
 
@@ -19,7 +18,7 @@ namespace ChinhDo.Transactions
         {
             if (File.Exists(path))
             {
-                string temp = FileUtils.GetTempFileName(Path.GetExtension(path));
+                string temp = GetTempPathName(Path.GetExtension(path));
                 File.Copy(path, temp);
                 backupPath = temp;
             }

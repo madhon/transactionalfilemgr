@@ -8,16 +8,18 @@ namespace ChinhDo.Transactions
     sealed class TxEnlistment : IEnlistmentNotification
     {
         private readonly List<IRollbackableOperation> _journal = new List<IRollbackableOperation>();
+        private string _txId;
 
         /// <summary>Initializes a new instance of the <see cref="TxEnlistment"/> class.</summary>
         /// <param name="tx">The Transaction.</param>
         public TxEnlistment(Transaction tx)
         {
+            this._txId = tx.TransactionInformation.LocalIdentifier;
             tx.EnlistVolatile(this, EnlistmentOptions.None);
         }
 
         /// <summary>
-        /// Enlists <paramref name="operation"/> in its journal, so it will be committed or rolled
+        /// Enlists <paramref name="operation"/> in its journal, so it will be committed or rolled back
         /// together with the other enlisted operations.
         /// </summary>
         /// <param name="operation"></param>
@@ -31,13 +33,15 @@ namespace ChinhDo.Transactions
         public void Commit(Enlistment enlistment)
         {
             DisposeJournal();
-
             enlistment.Done();
+            CleanUp();
         }
 
         public void InDoubt(Enlistment enlistment)
         {
+            DisposeJournal();
             Rollback(enlistment);
+            CleanUp();
         }
 
         public void Prepare(PreparingEnlistment preparingEnlistment)
@@ -46,7 +50,7 @@ namespace ChinhDo.Transactions
         }
 
         /// <summary>Notifies an enlisted object that a transaction is being rolled back (aborted).</summary>
-        /// <param name="enlistment">A <see cref="T:System.Transactions.Enlistment"></see> object used to send a response to the transaction manager.</param>
+        /// <param name="enlistment">A <see cref="System.Transactions.Enlistment"></see> object used to send a response to the transaction manager.</param>
         /// <remarks>This is typically called on a different thread from the transaction thread.</remarks>
         public void Rollback(Enlistment enlistment)
         {
@@ -66,6 +70,12 @@ namespace ChinhDo.Transactions
             }
 
             enlistment.Done();
+            CleanUp();
+        }
+
+        private void CleanUp()
+        {
+            TxFileManager._enlistments.Remove(this._txId);
         }
 
         private void DisposeJournal()

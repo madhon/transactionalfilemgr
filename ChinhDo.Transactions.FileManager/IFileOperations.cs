@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace ChinhDo.Transactions
 {
+    // TODO: Why do we have two interfaces IFileManager and IFileOperations?
+
     /// <summary>
     /// Classes implementing this interface provide methods to manipulate files.
     /// </summary>

@@ -28,6 +28,7 @@
         <e p="IFileOperations.cs" t="Include" />
         <e p="IoOperation.cs" t="Include" />
         <e p="IRollbackableOperation.cs" t="Include" />
+        <e p="MoveDirectoryOperation.cs" t="Include" />
         <e p="MoveFileOperation.cs" t="Include" />
         <e p="obj" t="ExcludeRecursive">
           <e p="Debug" t="Include">

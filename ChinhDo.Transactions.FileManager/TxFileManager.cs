@@ -92,7 +92,7 @@ namespace ChinhDo.Transactions
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new MoveFileOperation(this.GetTempPath(), srcFileName, destFileName));
+                EnlistOperation(new MoveFileOperation(srcFileName, destFileName));
             }
             else
             {
@@ -100,6 +100,15 @@ namespace ChinhDo.Transactions
             }
         }
 
+        public void MoveDirectory(string srcDirName, string destDirName) {
+            if (IsInTransaction()) {
+                EnlistOperation(new MoveDirectoryOperation(srcDirName, destDirName));
+            }
+            else {
+                File.Move(srcDirName, destDirName);
+            }
+        }
+        
         public void Snapshot(string fileName)
         {
             if (IsInTransaction())

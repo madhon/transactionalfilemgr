@@ -2,11 +2,11 @@
 <project version="4">
   <component name="ContentModelStore">
     <e p="C:\Users\jon\.gitignore" t="IncludeRecursive" />
-    <e p="C:\Users\jon\.nuget\packages\microsoft.net.test.sdk\16.6.1\build\netcoreapp2.1" t="Include">
+    <e p="C:\Users\jon\.nuget\packages\microsoft.net.test.sdk\16.7.0\build\netcoreapp2.1" t="Include">
       <e p="Microsoft.NET.Test.Sdk.Program.cs" t="Include" />
     </e>
-    <e p="C:\Users\jon\.nuget\packages\microsoft.testplatform.testhost\16.6.1\build\netcoreapp2.1\x64\testhost.dll" t="Include" />
-    <e p="C:\Users\jon\.nuget\packages\microsoft.testplatform.testhost\16.6.1\build\netcoreapp2.1\x64\testhost.exe" t="Include" />
+    <e p="C:\Users\jon\.nuget\packages\microsoft.testplatform.testhost\16.7.0\build\netcoreapp2.1\x64\testhost.dll" t="Include" />
+    <e p="C:\Users\jon\.nuget\packages\microsoft.testplatform.testhost\16.7.0\build\netcoreapp2.1\x64\testhost.exe" t="Include" />
     <e p="C:\Users\jon\.nuget\packages\xunit.runner.visualstudio\2.4.3\build\netcoreapp2.1\xunit.runner.reporters.netcoreapp10.dll" t="Include" />
     <e p="C:\Users\jon\.nuget\packages\xunit.runner.visualstudio\2.4.3\build\netcoreapp2.1\xunit.runner.utility.netcoreapp10.dll" t="Include" />
     <e p="C:\Users\jon\.nuget\packages\xunit.runner.visualstudio\2.4.3\build\netcoreapp2.1\xunit.runner.visualstudio.dotnetcore.testadapter.dll" t="Include" />

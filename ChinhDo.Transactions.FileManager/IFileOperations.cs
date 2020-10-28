@@ -1,5 +1,7 @@
 namespace ChinhDo.Transactions
 {
+    using System.Text;
+
     // TODO: Why do we have two interfaces IFileManager and IFileOperations?
 
     /// <summary>
@@ -66,6 +68,14 @@ namespace ChinhDo.Transactions
         /// <param name="path">The file to write to.</param>
         /// <param name="contents">The string to write to the file.</param>
         void WriteAllText(string path, string contents);
+
+        /// <summary>
+        /// Creates a file, write the specified <paramref name="contents"/> to the file.
+        /// </summary>
+        /// <param name="path">The file to write to.</param>
+        /// <param name="contents">The string to write to the file.</param>
+        /// <param name="encoding">The encoding to the file.</param>
+        void WriteAllText(string path, string contents, Encoding encoding);
 
         /// <summary>
         /// Creates a file, write the specified <paramref name="contents"/> to the file.

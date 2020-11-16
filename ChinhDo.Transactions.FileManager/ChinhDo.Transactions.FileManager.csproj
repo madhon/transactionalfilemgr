@@ -6,8 +6,8 @@
     <Copyright>©  2008 Chinh Do http://www.chinhdo.com</Copyright>
     <Authors>Chinh Do</Authors>
     <PackageId>ChinhDo.Transactions</PackageId>
-    <AssemblyVersion>2.0.0.0</AssemblyVersion>
-    <FileVersion>2.0.0.0</FileVersion>
+    <AssemblyVersion>2.1.0.0</AssemblyVersion>
+    <FileVersion>2.1.0.0</FileVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RepositoryUrl>https://github.com/madhon/transactionalfilemgr</RepositoryUrl>
     <PackageProjectUrl>https://github.com/madhon/transactionalfilemgr</PackageProjectUrl>

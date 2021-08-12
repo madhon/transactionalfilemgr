@@ -8,7 +8,7 @@ namespace ChinhDo.Transactions
     sealed class TxEnlistment : IEnlistmentNotification
     {
         private readonly List<IRollbackableOperation> _journal = new List<IRollbackableOperation>();
-        private string _txId;
+        private readonly string _txId;
 
         /// <summary>Initializes a new instance of the <see cref="TxEnlistment"/> class.</summary>
         /// <param name="tx">The Transaction.</param>

@@ -24,7 +24,9 @@ namespace ChinhDo.Transactions
 
         public void Rollback()
         {
+#pragma warning disable S2234 // Parameters should be passed in the correct order
             File.Move(destFileName, sourceFileName);
+#pragma warning restore S2234 // Parameters should be passed in the correct order
         }
     }
 }

@@ -7,6 +7,7 @@ namespace ChinhDo.Transactions
     /// Class that contains common code for those rollbackable file operations which need
     /// to backup a single file and restore it when Rollback() is called.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3881:\"IDisposable\" should be implemented correctly", Justification = "<Pending>")]
     abstract class SingleFileOperation : IoOperation, IRollbackableOperation, IDisposable
     {
         protected readonly string path;
@@ -17,7 +18,7 @@ namespace ChinhDo.Transactions
         /// <summary>Constructor</summary>
         /// <param name="tempPath">Path to temp directory.</param>
         /// <param name="path">Path to the file</param>
-        public SingleFileOperation(string tempPath, string path) : base(tempPath)
+        protected SingleFileOperation(string tempPath, string path) : base(tempPath)
         {
             this.path = path;
         }

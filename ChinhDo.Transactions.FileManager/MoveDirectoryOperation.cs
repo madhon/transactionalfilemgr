@@ -24,7 +24,9 @@
 
         public void Rollback()
         {
+#pragma warning disable S2234 // Parameters should be passed in the correct order
             Directory.Move(destDirName, sourceDirName);
+#pragma warning restore S2234 // Parameters should be passed in the correct order
         }
     }
 }

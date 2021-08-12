@@ -260,9 +260,11 @@ namespace ChinhDo.Transactions
 
         /// <summary>Dictionary of transaction enlistment objects for the current thread.</summary>
         //[ThreadStatic] <-- Is this needed?
+#pragma warning disable S2223 // Non-constant static fields should not be visible
         internal static Dictionary<string, TxEnlistment> _enlistments;
+#pragma warning restore S2223 // Non-constant static fields should not be visible
         internal static readonly object _enlistmentsLock = new object();
-        private string _tempPath = null;
+        private readonly string _tempPath = null;
 
         private static bool IsInTransaction()
         {

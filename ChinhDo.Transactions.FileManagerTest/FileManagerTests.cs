@@ -1,18 +1,17 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Transactions;
-using Xunit;
-
-namespace ChinhDo.Transactions.FileManagerTest
+﻿namespace ChinhDo.Transactions.FileManagerTest
 {
+    using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Runtime.InteropServices;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using System.Transactions;
+    using FluentAssertions;
+    using Xunit;
+
     public sealed class FileManagerTests : IDisposable
     {
         private readonly IFileManager _target;
@@ -41,8 +40,9 @@ namespace ChinhDo.Transactions.FileManagerTest
                 }
             }
 
-            int numTempFiles = Directory.GetFiles(Path.Combine(Path.GetTempPath(), "TxFileMgr-fc4eed76ee9b")).Length;
-            Assert.Equal(0, numTempFiles);
+            var numTempFiles = Directory.GetFiles(Path.Combine(Path.GetTempPath(), "TxFileMgr-fc4eed76ee9b")).Length;
+
+            numTempFiles.Should().Be(0);
         }
 
         #region Operations
@@ -50,30 +50,32 @@ namespace ChinhDo.Transactions.FileManagerTest
         [Fact]
         public void CanAppendAllText()
         {
-            string f1 = GetTempPathName();
+            var f1 = GetTempPathName();
             const string contents = "123";
 
-            using (TransactionScope scope1 = new TransactionScope())
+            using (var scope1 = new TransactionScope())
             {
                 _target.AppendAllText(f1, contents);
                 scope1.Complete();
             }
 
-            Assert.Equal(contents, File.ReadAllText(f1));
+            File.ReadAllText(f1).Should().Be(contents);
         }
 
         [Fact]
         public void AppendAllTexHandlesException()
         {
-            string f1 = GetTempPathName();
+            var f1 = GetTempPathName();
             const string contents = "123";
 
-            using (TransactionScope scope1 = new TransactionScope())
+            using (var scope1 = new TransactionScope())
             {
-                using (FileStream fs = File.Open(f1, FileMode.OpenOrCreate, FileAccess.Read, FileShare.None))
+                using (var fs = File.Open(f1, FileMode.OpenOrCreate, FileAccess.Read, FileShare.None))
                 {
-                    Exception ex = Assert.Throws<IOException>(() => _target.AppendAllText(f1, contents));
-                    Assert.Contains("The process cannot access the file", ex.Message, StringComparison.CurrentCulture);
+                    Action act = () => _target.AppendAllText(f1, contents);
+
+                    act.Should().Throw<IOException>()
+                        .Where(e => e.Message.Contains("The process cannot access the file"));
                 }
             }
         }
@@ -81,82 +83,84 @@ namespace ChinhDo.Transactions.FileManagerTest
         [Fact]
         public void AppendAllTextCanRollback()
         {
-            string f1 = GetTempPathName();
+            var f1 = GetTempPathName();
             const string contents = "qwerty";
-            using (TransactionScope sc1 = new TransactionScope())
+            using (var sc1 = new TransactionScope())
             {
                 _target.AppendAllText(f1, contents);
                 // without specifically committing, this should rollback
             }
 
-            Assert.False(File.Exists(f1), f1 + " should not exist.");
+            File.Exists(f1).Should().BeFalse($"{f1} should not exist");
         }
 
         [Fact]
         public void CanCopy()
         {
-            string sourceFileName = GetTempPathName();
-            string destFileName = GetTempPathName();
+            var sourceFileName = GetTempPathName();
+            var destFileName = GetTempPathName();
 
             const string expectedText = "Test 123.";
-            using (TransactionScope scope1 = new TransactionScope())
+            using (var scope1 = new TransactionScope())
             {
                 File.WriteAllText(sourceFileName, expectedText);
                 _target.Copy(sourceFileName, destFileName, false);
                 scope1.Complete();
             }
 
-            Assert.Equal(expectedText, File.ReadAllText(sourceFileName));
-            Assert.Equal(expectedText, File.ReadAllText(destFileName));
+            File.ReadAllText(sourceFileName).Should().Be(expectedText);
+            File.ReadAllText(destFileName).Should().Be(expectedText);
         }
 
         [Fact]
         public void CanCopyAndRollback()
         {
-            string sourceFileName = GetTempPathName();
+            var sourceFileName = GetTempPathName();
             const string expectedText = "Hello 123.";
             File.WriteAllText(sourceFileName, expectedText);
-            string destFileName = GetTempPathName();
+            var destFileName = GetTempPathName();
 
-            using (TransactionScope scope1 = new TransactionScope())
+            using (var scope1 = new TransactionScope())
             {
                 _target.Copy(sourceFileName, destFileName, false);
                 // without specifically committing, this should rollback
             }
 
-            Assert.False(File.Exists(destFileName), destFileName + " should not exist.");
+            File.Exists(destFileName).Should().BeFalse($"{destFileName} should not exist");
         }
 
         [Fact]
         public void CanHandleCopyErrors()
         {
-            string f1 = GetTempPathName();
-            string f2 = GetTempPathName();
+            var f1 = GetTempPathName();
+            var f2 = GetTempPathName();
 
             using (var fs = new FileStream(f2, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
             {
-                using (TransactionScope scope1 = new TransactionScope())
+                using (var scope1 = new TransactionScope())
                 {
                     _target.WriteAllText(f1, "test");
-                    Assert.Throws<IOException>(() => _target.Copy(f1, f2, false));
 
+                    Action act = () => _target.Copy(f1, f2, false);
+                    act.Should().Throw<IOException>();
                     //rollback
                 }
             }
 
-            Assert.False(File.Exists(f1));
+            File.Exists(f1).Should().BeFalse();
         }
 
         [Fact]
         public void CanCreateDirectory()
         {
-            string d1 = GetTempPathName();
-            using (TransactionScope scope1 = new TransactionScope())
+            var d1 = GetTempPathName();
+            using (var scope1 = new TransactionScope())
             {
                 _target.CreateDirectory(d1);
                 scope1.Complete();
             }
-            Assert.True(Directory.Exists(d1), d1 + " should exist.");
+
+            Directory.Exists(d1).Should().BeTrue();
         }
 
         /// <summary>
@@ -165,104 +169,104 @@ namespace ChinhDo.Transactions.FileManagerTest
         [Fact]
         public void CanRollbackNestedDirectories()
         {
-            string baseDir = GetTempPathName();
+            var baseDir = GetTempPathName();
             Directory.CreateDirectory(baseDir);
-            string nested = Path.Combine(baseDir, "level1");
+            var nested = Path.Combine(baseDir, "level1");
             nested = Path.Combine(nested, "level2");
             using (new TransactionScope())
             {
                 _target.CreateDirectory(nested);
                 Assert.True(Directory.Exists(nested));
             }
-            Assert.False(Directory.Exists(nested), nested + " should not exists.");
-            Assert.True(Directory.Exists(baseDir), baseDir + " should exist.");
+
+            Directory.Exists(nested).Should().BeFalse();
+            Directory.Exists(baseDir).Should().BeTrue();
             Directory.Delete(baseDir);
         }
 
         [Fact]
         public void CanCreateDirectoryAndRollback()
         {
-            string d1 = GetTempPathName();
-            using (TransactionScope scope1 = new TransactionScope())
+            var d1 = GetTempPathName();
+            using (var scope1 = new TransactionScope())
             {
                 _target.CreateDirectory(d1);
             }
-            Assert.False(Directory.Exists(d1), d1 + " should not exist.");
+
+            Directory.Exists(d1).Should().BeFalse();
         }
 
         [Fact]
         public void CanDeleteDirectory()
         {
-            string f1 = GetTempPathName();
+            var f1 = GetTempPathName();
             Directory.CreateDirectory(f1);
 
-            using (TransactionScope scope1 = new TransactionScope())
+            using (var scope1 = new TransactionScope())
             {
                 _target.DeleteDirectory(f1);
                 scope1.Complete();
             }
-
-            Assert.False(Directory.Exists(f1), f1 + " should no longer exist.");
+            Directory.Exists(f1).Should().BeFalse();
         }
 
         [Fact]
         public void CanDeleteDirectoryAndRollback()
         {
-            string f1 = GetTempPathName();
+            var f1 = GetTempPathName();
             Directory.CreateDirectory(f1);
 
-            using (TransactionScope scope1 = new TransactionScope())
+            using (var scope1 = new TransactionScope())
             {
                 _target.DeleteDirectory(f1);
             }
 
-            Assert.True(Directory.Exists(f1), f1 + " should exist.");
+            Directory.Exists(f1).Should().BeTrue();
         }
 
         [Fact]
         public void CanDeleteFile()
         {
-            string f1 = GetTempPathName();
+            var f1 = GetTempPathName();
             const string contents = "abc";
             File.WriteAllText(f1, contents);
 
-            using (TransactionScope scope1 = new TransactionScope())
+            using (var scope1 = new TransactionScope())
             {
                 _target.Delete(f1);
                 scope1.Complete();
             }
-
-            Assert.False(File.Exists(f1), f1 + " should no longer exist.");
+            File.Exists(f1).Should().BeFalse();
         }
 
         [Fact]
         public void CanDeleteFileAndRollback()
         {
-            string f1 = GetTempPathName();
+            var f1 = GetTempPathName();
             const string contents = "abc";
             File.WriteAllText(f1, contents);
 
-            using (TransactionScope scope1 = new TransactionScope())
+            using (var scope1 = new TransactionScope())
             {
                 _target.Delete(f1);
             }
 
-            Assert.True(File.Exists(f1), f1 + " should exist.");
-            Assert.Equal(contents, File.ReadAllText(f1));
+            File.Exists(f1).Should().BeTrue();
+            File.ReadAllText(f1).Should().Be(contents);
         }
 
         [Fact]
         public void CanMoveFile()
         {
             const string contents = "abc";
-            string f1 = GetTempPathName();
-            string f2 = GetTempPathName();
+            var f1 = GetTempPathName();
+            var f2 = GetTempPathName();
             File.WriteAllText(f1, contents);
 
-            using (TransactionScope scope1 = new TransactionScope())
+            using (var scope1 = new TransactionScope())
             {
-                Assert.True(File.Exists(f1));
-                Assert.False(File.Exists(f2));
+                File.Exists(f1).Should().BeTrue();
+                File.Exists(f2).Should().BeFalse();
                 _target.Move(f1, f2);
                 scope1.Complete();
             }
@@ -272,98 +276,98 @@ namespace ChinhDo.Transactions.FileManagerTest
         public void CanMoveFileAndRollback()
         {
             const string contents = "abc";
-            string f1 = GetTempPathName();
-            string f2 = GetTempPathName();
+            var f1 = GetTempPathName();
+            var f2 = GetTempPathName();
             File.WriteAllText(f1, contents);
 
             using (new TransactionScope())
             {
-                Assert.True(File.Exists(f1));
-                Assert.False(File.Exists(f2));
+                File.Exists(f1).Should().BeTrue();
+                File.Exists(f2).Should().BeFalse();
                 _target.Move(f1, f2);
             }
 
-            Assert.Equal(contents, File.ReadAllText(f1));
-            Assert.False(File.Exists(f2));
+            File.ReadAllText(f1).Should().Be(contents);
+            File.Exists(f2).Should().BeFalse();
         }
         
         [Fact]
         public void CanMoveDirectory() {
-            string f1 = GetTempPathName();
-            string f2 = GetTempPathName();
+            var f1 = GetTempPathName();
+            var f2 = GetTempPathName();
             Directory.CreateDirectory(f1);
 
-            using (TransactionScope scope1 = new TransactionScope()) {
-                Assert.True(Directory.Exists(f1));
-                Assert.False(Directory.Exists(f2));
+            using (var scope1 = new TransactionScope()) {
+                Directory.Exists(f1).Should().BeTrue();
+                Directory.Exists(f2).Should().BeFalse();
                 _target.MoveDirectory(f1, f2);
                 scope1.Complete();
             }
 
-            Assert.False(Directory.Exists(f1));
-            Assert.True(Directory.Exists(f2));
+            Directory.Exists(f1).Should().BeFalse();
+            Directory.Exists(f2).Should().BeTrue();
         }
 
         [Fact]
         public void CanMoveDirectoryAndRollback() {
-            string f1 = GetTempPathName();
-            string f2 = GetTempPathName();
+            var f1 = GetTempPathName();
+            var f2 = GetTempPathName();
             Directory.CreateDirectory(f1);
 
             using (new TransactionScope()) {
-                Assert.True(Directory.Exists(f1));
-                Assert.False(Directory.Exists(f2));
+                Directory.Exists(f1).Should().BeTrue();
+                Directory.Exists(f2).Should().BeFalse();
                 _target.MoveDirectory(f1, f2);
             }
 
-            Assert.True(Directory.Exists(f1));
-            Assert.False(Directory.Exists(f2));
+            Directory.Exists(f1).Should().BeTrue();
+            Directory.Exists(f2).Should().BeFalse();
         }
 
         [Fact]
         public void CanSnapshot()
         {
-            string f1 = GetTempPathName();
+            var f1 = GetTempPathName();
 
-            using (TransactionScope scope1 = new TransactionScope())
+            using (var scope1 = new TransactionScope())
             {
                 _target.Snapshot(f1);
                 _target.AppendAllText(f1, "<test></test>");
             }
 
-            Assert.False(File.Exists(f1));
+            File.Exists(f1).Should().BeFalse();
         }
 
         [Fact]
         public void CanWriteAllText()
         {
-            string f1 = GetTempPathName();
+            var f1 = GetTempPathName();
             const string contents = "abcdef";
             File.WriteAllText(f1, "123");
 
-            using (TransactionScope scope1 = new TransactionScope())
+            using (var scope1 = new TransactionScope())
             {
                 _target.WriteAllText(f1, contents);
                 scope1.Complete();
             }
 
-            Assert.Equal(contents, File.ReadAllText(f1));
+            File.ReadAllText(f1).Should().Be(contents);
         }
 
         [Fact]
         public void CanWriteAllTextAndRollback()
         {
-            string f1 = GetTempPathName();
+            var f1 = GetTempPathName();
             const string contents1 = "123";
             const string contents2 = "abcdef";
             File.WriteAllText(f1, contents1);
 
-            using (TransactionScope scope1 = new TransactionScope())
+            using (var scope1 = new TransactionScope())
             {
                 _target.WriteAllText(f1, contents2);
             }
 
-            Assert.Equal(contents1, File.ReadAllText(f1));
+            File.ReadAllText(f1).Should().Be(contents1);
         }
 
         #endregion
@@ -379,14 +383,14 @@ namespace ChinhDo.Transactions.FileManagerTest
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                string f1 = GetTempPathName(".txt");
-                string f2 = GetTempPathName(".txt");
+                var f1 = GetTempPathName(".txt");
+                var f2 = GetTempPathName(".txt");
 
                 try
                 {
-                    Exception ex = Assert.Throws<TransactionException>(() =>
+                    Action act = () =>
                     {
-                        using (TransactionScope scope1 = new TransactionScope())
+                        using (var scope1 = new TransactionScope())
                         {
                             _target.WriteAllText(f1, "Test.");
                             _target.WriteAllText(f2, "Test.");
@@ -396,13 +400,13 @@ namespace ChinhDo.Transactions.FileManagerTest
 
                             // rollback
                         }
-                    });
+                    };
 
-                    Assert.Contains("Failed to roll back.", ex.Message, StringComparison.CurrentCulture);
+                    act.Should().Throw<TransactionException>().Where(e => e.Message.Contains("Failed to roll back."));
                 }
                 finally
                 {
-                    FileInfo fi1 = new FileInfo(f1);
+                    var fi1 = new FileInfo(f1);
                     if (fi1.Exists)
                     {
                         fi1.Attributes = FileAttributes.Normal;
@@ -416,32 +420,31 @@ namespace ChinhDo.Transactions.FileManagerTest
         public void CanReuseManager()
         {
             {
-                string f1 = GetTempPathName();
+                var f1 = GetTempPathName();
                 File.WriteAllText(f1, "Hello.");
-                string f2 = GetTempPathName();
+                var f2 = GetTempPathName();
 
-                using (TransactionScope scope1 = new TransactionScope())
+                using (var scope1 = new TransactionScope())
                 {
                     _target.Copy(f1, f2, false);
 
                     // rollback
                 }
-
-                Assert.False(File.Exists(f2));
+                File.Exists(f2).Should().BeFalse();
             }
 
             {
-                string f1 = GetTempPathName();
+                var f1 = GetTempPathName();
                 File.WriteAllText(f1, "Hello.");
 
-                using (TransactionScope scope1 = new TransactionScope())
+                using (var scope1 = new TransactionScope())
                 {
                     _target.Delete(f1);
 
                     // rollback
                 }
 
-                Assert.True(File.Exists(f1));
+                File.Exists(f1).Should().BeTrue();
             }
         }
 
@@ -449,38 +452,38 @@ namespace ChinhDo.Transactions.FileManagerTest
         public void CanSupportTransactionScopeOptionSuppress()
         {
             const string contents = "abc";
-            string f1 = GetTempPathName(".txt");
-            using (TransactionScope scope1 = new TransactionScope(TransactionScopeOption.Suppress))
+            var f1 = GetTempPathName(".txt");
+            using (var scope1 = new TransactionScope(TransactionScopeOption.Suppress))
             {
                 _target.WriteAllText(f1, contents);
             }
 
             // With TransactionScopeOption.Suppress - commit is implicit so our change should have been committed
             // without us doing a scope.Complete()
-            Assert.Equal(contents, File.ReadAllText(f1));
+            File.ReadAllText(f1).Should().Be(contents);
         }
 
         [Fact]
         public void CanNestTransactions()
         {
-            string f1 = GetTempPathName(".txt");
+            var f1 = GetTempPathName(".txt");
             const string f1Contents = "f1";
-            string f2 = GetTempPathName(".txt");
+            var f2 = GetTempPathName(".txt");
             const string f2Contents = "f2";
-            string f3 = GetTempPathName(".txt");
+            var f3 = GetTempPathName(".txt");
             const string f3Contents = "f3";
 
-            using (TransactionScope sc1 = new TransactionScope())
+            using (var sc1 = new TransactionScope())
             {
                 _target.WriteAllText(f1, f1Contents);
 
-                using (TransactionScope sc2 = new TransactionScope())
+                using (var sc2 = new TransactionScope())
                 {
                     _target.WriteAllText(f2, f2Contents);
                     sc2.Complete();
                 }
 
-                using (TransactionScope sc3 = new TransactionScope(TransactionScopeOption.RequiresNew))
+                using (var sc3 = new TransactionScope(TransactionScopeOption.RequiresNew))
                 {
                     _target.WriteAllText(f3, f3Contents);
                     sc3.Complete();
@@ -488,10 +491,9 @@ namespace ChinhDo.Transactions.FileManagerTest
 
                 sc1.Dispose();
             }
-
-            Assert.False(File.Exists(f1));
-            Assert.False(File.Exists(f2));
-            Assert.True(File.Exists(f3));
+            File.Exists(f1).Should().BeFalse();
+            File.Exists(f2).Should().BeFalse();
+            File.Exists(f3).Should().BeTrue();
         }
 
         [Fact]
@@ -522,7 +524,7 @@ namespace ChinhDo.Transactions.FileManagerTest
                 t.Join();
             }
 
-            Assert.Equal(iterations, exceptions.Count);
+            exceptions.Count.Should().Be(iterations);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
@@ -554,27 +556,27 @@ namespace ChinhDo.Transactions.FileManagerTest
                 scope1.Complete();
             }
 
-            Assert.Equal(0, TxFileManager.GetEnlistmentCount());
+            TxFileManager.GetEnlistmentCount().Should().Be(0);
         }
 
         [Fact]
         public void CanSetCustomTempPath()
         {
             IFileManager fm = new TxFileManager();
-            string myTempPath = "\\temp-f8417ba5";
+            var myTempPath = "\\temp-f8417ba5";
 
-            string d1 = fm.CreateTempDirectory();
-            Assert.DoesNotContain(myTempPath, d1, StringComparison.CurrentCulture);
+            var d1 = fm.CreateTempDirectory();
+            d1.Should().NotContain(myTempPath);
 
-            string f1 = fm.CreateTempFileName();
-            Assert.DoesNotContain(myTempPath, f1, StringComparison.CurrentCulture);
+            var f1 = fm.CreateTempFileName();
+            f1.Should().NotContain(myTempPath);
 
             IFileManager fm2 = new TxFileManager(myTempPath);
-            string d2 = fm2.CreateTempDirectory();
-            Assert.Contains(myTempPath, d2, StringComparison.CurrentCulture);
+            var d2 = fm2.CreateTempDirectory();
+            d2.Should().Contain(myTempPath);
 
-            string f2 = fm2.CreateTempFileName();
-            Assert.Contains(myTempPath, f2, StringComparison.CurrentCulture);
+            var f2 = fm2.CreateTempFileName();
+            f2.Should().Contain(myTempPath);
 
             Directory.Delete(d1);
             Directory.Delete(d2);
@@ -592,7 +594,7 @@ namespace ChinhDo.Transactions.FileManagerTest
             {
                 await Task.Factory.StartNew(action, CancellationToken.None, TaskCreationOptions.None, scheduler);
             }
-            TransactionScope ts = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+            var ts = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
             IFileManager fm = null;
             await RunInNewThread(() =>
             {

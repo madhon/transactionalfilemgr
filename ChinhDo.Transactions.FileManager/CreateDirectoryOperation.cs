@@ -51,13 +51,13 @@ namespace ChinhDo.Transactions
             if (Directory.Exists(child))
             {
                 // nothing to do
+#pragma warning disable S3626 // Jump statements should not be redundant
                 return;
+#pragma warning restore S3626 // Jump statements should not be redundant
             }
-            else
-            {
-                Directory.CreateDirectory(_path);
-                _backupPath = child;
-            }
+
+            Directory.CreateDirectory(_path);
+            _backupPath = child;
         }
 
         public void Rollback()

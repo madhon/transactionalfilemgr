@@ -8,7 +8,7 @@ namespace ChinhDo.Transactions
     {
         /// <summary>Constructor</summary>
         /// <param name="tempPath">Path to temp directory</param>
-        public IoOperation(string tempPath)
+        protected IoOperation(string tempPath)
         {
             this._tempPath = tempPath;
         }
@@ -38,6 +38,6 @@ namespace ChinhDo.Transactions
             return retVal;
         }
 
-        private string _tempPath;
+        private readonly string _tempPath;
     }
 }

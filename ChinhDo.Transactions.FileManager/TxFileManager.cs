@@ -1,10 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Transactions;
-
 namespace ChinhDo.Transactions
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Text;
+    using System.Transactions;
+
     /// <summary>
     /// File Resource Manager. Allows inclusion of file system operations in transactions (<see cref="System.Transactions"/>).
     /// http://www.chinhdo.com/20080825/transactional-file-manager/
@@ -32,11 +33,23 @@ namespace ChinhDo.Transactions
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new AppendAllTextOperation(this.GetTempPath(), path, contents));
+                EnlistOperation(new AppendAllTextOperation(this.GetTempPath(), path, contents, null));
             }
             else
             {
                 File.AppendAllText(path, contents);
+            }
+        }
+
+        public void AppendAllText(string path, string contents, Encoding encoding)
+        {
+            if (IsInTransaction())
+            {
+                EnlistOperation(new AppendAllTextOperation(GetTempPath(), path, contents, encoding));
+            }
+            else
+            {
+                File.AppendAllText(path, contents, encoding);
             }
         }
 
@@ -126,6 +139,18 @@ namespace ChinhDo.Transactions
             else
             {
                 File.WriteAllText(path, contents);
+            }
+        }
+
+        public void WriteAllText(string path, string contents, Encoding encoding)
+        {
+            if (IsInTransaction())
+            {
+                EnlistOperation(new WriteAllTextOperation(this.GetTempPath(), path, contents, encoding));
+            }
+            else
+            {
+                File.WriteAllText(path, contents, encoding);
             }
         }
 
@@ -234,10 +259,12 @@ namespace ChinhDo.Transactions
         #region Private
 
         /// <summary>Dictionary of transaction enlistment objects for the current thread.</summary>
-        [ThreadStatic]
+        //[ThreadStatic] <-- Is this needed?
+#pragma warning disable S2223 // Non-constant static fields should not be visible
         internal static Dictionary<string, TxEnlistment> _enlistments;
+#pragma warning restore S2223 // Non-constant static fields should not be visible
         internal static readonly object _enlistmentsLock = new object();
-        private string _tempPath = null;
+        private readonly string _tempPath = null;
 
         private static bool IsInTransaction()
         {

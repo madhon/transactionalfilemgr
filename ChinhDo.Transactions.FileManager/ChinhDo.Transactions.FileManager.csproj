@@ -4,20 +4,33 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Company>Chinh Do</Company>
     <Copyright>© 2008 Chinh Do http://www.chinhdo.com</Copyright>
-    <Authors>Chinh Do</Authors>
+    
     <PackageId>ChinhDo.Transactions</PackageId>
     <AssemblyVersion>2.2.0.0</AssemblyVersion>
     <FileVersion>2.2.0.0</FileVersion>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <RepositoryUrl>https://github.com/madhon/transactionalfilemgr</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/madhon/transactionalfilemgr</PackageProjectUrl>
-    <Description>Chinh Do's Transactional File Manager for .NET</Description>
+   
     <AssemblyName>ChinhDo.Transactions</AssemblyName>
     <PackageIcon>TxFileManager.png</PackageIcon>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
+  </PropertyGroup>
+
+
+  <PropertyGroup>
+    <Authors>Chinh Do</Authors>
+    <Company>Chinh Do</Company>
+    <Copyright>© 2008 Chinh Do http://www.chinhdo.com</Copyright>
+    <RepositoryUrl>https://github.com/madhon/transactionalfilemgr</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/madhon/transactionalfilemgr</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType> 
+    <Description>Chinh Do's Transactional File Manager for .NET</Description>
+  </PropertyGroup>
+
+  <PropertyGroup Label="MinVer">
+    <MinVerVerbosity>normal</MinVerVerbosity>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
@@ -41,9 +54,13 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-    <PackageReference Include="SonarAnalyzer.CSharp" Version="8.41.0.50478">
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="8.42.0.51121">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="SecurityCodeScan.VS2019" Version="5.6.3">
+    <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
   </ItemGroup>
 

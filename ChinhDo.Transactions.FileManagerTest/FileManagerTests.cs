@@ -6,6 +6,7 @@
     using System.IO;
     using System.Linq;
     using System.Runtime.InteropServices;
+    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Transactions;
@@ -365,6 +366,39 @@
             using (var scope1 = new TransactionScope())
             {
                 _target.WriteAllText(f1, contents2);
+            }
+
+            File.ReadAllText(f1).Should().Be(contents1);
+        }
+
+
+        [Fact]
+        public void CanWriteAllTextWithEncoding()
+        {
+            string f1 = GetTempPathName();
+            const string contents = "abcdef";
+            File.WriteAllText(f1, "123", Encoding.UTF8);
+
+            using (TransactionScope scope1 = new TransactionScope())
+            {
+                _target.WriteAllText(f1, contents, Encoding.UTF8);
+                scope1.Complete();
+            }
+
+            File.ReadAllText(f1).Should().Be(contents);
+        }
+
+        [Fact]
+        public void CanWriteAllTextWithEncodingAndRollback()
+        {
+            string f1 = GetTempPathName();
+            const string contents1 = "123";
+            const string contents2 = "abcdef";
+            File.WriteAllText(f1, contents1, Encoding.UTF8);
+
+            using (TransactionScope scope1 = new TransactionScope())
+            {
+                _target.WriteAllText(f1, contents2, Encoding.UTF8);
             }
 
             File.ReadAllText(f1).Should().Be(contents1);

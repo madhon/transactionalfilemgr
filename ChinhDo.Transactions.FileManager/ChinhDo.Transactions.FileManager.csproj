@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Company>Chinh Do</Company>
-    <Copyright>© 2008 Chinh Do http://www.chinhdo.com</Copyright>
+    <Copyright>© 2008 Chinh Do https://www.chinhdo.com</Copyright>
     
     <PackageId>ChinhDo.Transactions</PackageId>
     <AssemblyVersion>2.2.0.0</AssemblyVersion>
@@ -22,7 +22,7 @@
   <PropertyGroup>
     <Authors>Chinh Do</Authors>
     <Company>Chinh Do</Company>
-    <Copyright>© 2008 Chinh Do http://www.chinhdo.com</Copyright>
+    <Copyright>© 2008 Chinh Do https://www.chinhdo.com</Copyright>
     <RepositoryUrl>https://github.com/madhon/transactionalfilemgr</RepositoryUrl>
     <PackageProjectUrl>https://github.com/madhon/transactionalfilemgr</PackageProjectUrl>
     <RepositoryType>git</RepositoryType> 

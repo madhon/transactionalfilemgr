@@ -5,6 +5,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChinhDo.Transactions.FileMa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChinhDo.Transactions.FileManagerTest", "ChinhDo.Transactions.FileManagerTest\ChinhDo.Transactions.FileManagerTest.csproj", "{2C3F1182-D243-448C-84B0-2F869A96A871}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{42E6D898-9133-403F-9A37-D4AECBF513A0}"
+	ProjectSection(SolutionItems) = preProject
+		.github\dependabot.yml = .github\dependabot.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{2ABCF3A4-875B-4DDD-BB6D-54C624E4E66C}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
+		.github\workflows\dotnet-core.yml = .github\workflows\dotnet-core.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -22,5 +33,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2ABCF3A4-875B-4DDD-BB6D-54C624E4E66C} = {42E6D898-9133-403F-9A37-D4AECBF513A0}
 	EndGlobalSection
 EndGlobal

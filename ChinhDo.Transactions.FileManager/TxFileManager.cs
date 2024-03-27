@@ -280,7 +280,7 @@ namespace ChinhDo.Transactions
             {
                 if (_enlistments == null)
                 {
-                    _enlistments = new Dictionary<string, TxEnlistment>();
+                    _enlistments = new Dictionary<string, TxEnlistment>(StringComparer.OrdinalIgnoreCase);
                 }
 
                 if (!_enlistments.TryGetValue(tx.TransactionInformation.LocalIdentifier, out enlistment))

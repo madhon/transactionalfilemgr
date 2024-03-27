@@ -67,7 +67,7 @@ namespace ChinhDo.Transactions
         /// </summary>
         private static void MoveDirectory(string sourcePath, string destinationPath)
         {
-            if (Directory.GetDirectoryRoot(sourcePath) == Directory.GetDirectoryRoot(destinationPath))
+            if (string.Equals(Directory.GetDirectoryRoot(sourcePath), Directory.GetDirectoryRoot(destinationPath), StringComparison.Ordinal))
             {
                 // The source and destination volumes are the same, so we can do the much less expensive Directory.Move.
                 Directory.Move(sourcePath, destinationPath);

@@ -231,8 +231,14 @@ namespace ChinhDo.Transactions
 
         public string CreateTempDirectory(string parentDirectory, string prefix)
         {
-            Guid g = Guid.NewGuid();
-            string dirName = Path.Combine(parentDirectory, prefix + g.ToString().Substring(0, 16));
+            var g = Guid.NewGuid();
+
+            var gs = g.ToString().AsSpan();
+            var gss = gs[..16];
+
+            ReadOnlySpan<char> pth = [..prefix, ..gss];
+
+            string dirName = Path.Combine(parentDirectory, pth.ToString());
 
             // TODO SnapShot Directory
             CreateDirectory(dirName);

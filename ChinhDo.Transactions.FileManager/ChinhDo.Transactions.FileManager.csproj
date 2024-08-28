@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+    <LangVersion>12.0</LangVersion>
     <Company>Chinh Do</Company>
     <Copyright>© 2008 Chinh Do https://www.chinhdo.com</Copyright>
     
@@ -28,6 +29,11 @@
     <RepositoryType>git</RepositoryType> 
     <Description>Chinh Do's Transactional File Manager for .NET</Description>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <WarningsAsErrors>$(WarningsAsErrors);SYSLIB1045;CA1309;CA1310;CA1831;CA1832;CA1833;CA1827;CA1860;CA1820;CA1829;CA1845;CA1846;CA1848;CA1851;CA1852;IDE0028</WarningsAsErrors>
+  </PropertyGroup>
+
 
   <PropertyGroup Label="MinVer">
     <MinVerVerbosity>normal</MinVerVerbosity>
@@ -75,4 +81,11 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- ... -->
+    <PackageReference Include="System.Memory" Version="4.5.5" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+    <PackageReference Include="IndexRange" Version="1.0.3" />
+    <!-- ... -->
+  </ItemGroup>
+  
 </Project>

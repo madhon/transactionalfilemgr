@@ -1,16 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net8.0;net9.0</TargetFrameworks>
     <LangVersion>12.0</LangVersion>
     <Company>Chinh Do</Company>
     <Copyright>© 2008 Chinh Do https://www.chinhdo.com</Copyright>
-    
     <PackageId>ChinhDo.Transactions</PackageId>
     <AssemblyVersion>2.2.0.0</AssemblyVersion>
     <FileVersion>2.2.0.0</FileVersion>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-   
     <AssemblyName>ChinhDo.Transactions</AssemblyName>
     <PackageIcon>TxFileManager.png</PackageIcon>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -18,32 +15,25 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
-
-
   <PropertyGroup>
     <Authors>Chinh Do</Authors>
     <Company>Chinh Do</Company>
     <Copyright>© 2008 Chinh Do https://www.chinhdo.com</Copyright>
     <RepositoryUrl>https://github.com/madhon/transactionalfilemgr</RepositoryUrl>
     <PackageProjectUrl>https://github.com/madhon/transactionalfilemgr</PackageProjectUrl>
-    <RepositoryType>git</RepositoryType> 
+    <RepositoryType>git</RepositoryType>
     <Description>Chinh Do's Transactional File Manager for .NET</Description>
   </PropertyGroup>
-
   <PropertyGroup>
     <WarningsAsErrors>$(WarningsAsErrors);SYSLIB1045;CA1309;CA1310;CA1831;CA1832;CA1833;CA1827;CA1860;CA1820;CA1829;CA1845;CA1846;CA1848;CA1851;CA1852;IDE0028</WarningsAsErrors>
   </PropertyGroup>
-
-
   <PropertyGroup Label="MinVer">
     <MinVerVerbosity>normal</MinVerVerbosity>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
-
   <ItemGroup>
     <None Update="TxFileManager.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -52,40 +42,36 @@
       <Pack>True</Pack>
     </None>
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="MinVer" Version="6.0.0">
+    <PackageReference Include="MinVer">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-    <PackageReference Include="SonarAnalyzer.CSharp" Version="9.32.0.97167">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+    <PackageReference Include="SonarAnalyzer.CSharp">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="SecurityCodeScan.VS2019" Version="5.6.7">
-    <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Meziantou.Analyzer" Version="2.0.179">
+    <PackageReference Include="SecurityCodeScan.VS2019">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Roslynator.Analyzers" Version="4.12.9">
+    <PackageReference Include="Meziantou.Analyzer">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.12.9">
+    <PackageReference Include="Roslynator.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- ... -->
-    <PackageReference Include="System.Memory" Version="4.6.0" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
-    <PackageReference Include="IndexRange" Version="1.0.3" />
-    <!-- ... -->
+    <PackageReference Include="Roslynator.Formatting.Analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   
+  <ItemGroup>
+    <PackageReference Include="System.Memory" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+    <PackageReference Include="IndexRange" Condition="'$(TargetFramework)' == 'netstandard2.0'"/>
+  </ItemGroup>
 </Project>

@@ -177,7 +177,7 @@
             using (new TransactionScope())
             {
                 _target.CreateDirectory(nested);
-                Assert.True(Directory.Exists(nested));
+                Directory.Exists(nested).Should().BeTrue();
             }
 
             Directory.Exists(nested).Should().BeFalse();

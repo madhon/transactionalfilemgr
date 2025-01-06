@@ -179,7 +179,7 @@
                 _target.CreateDirectory(nested);
                 Directory.Exists(nested).Should().BeTrue();
             }
-
+            
             Directory.Exists(nested).Should().BeFalse();
             Directory.Exists(baseDir).Should().BeTrue();
             Directory.Delete(baseDir);

@@ -20,7 +20,7 @@
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
     <PackageVersion Include="xunit.v3.core" Version="1.0.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.0.0" />
-    <PackageVersion Include="xunit.analyzers" Version="1.18.0" />
+    <PackageVersion Include="xunit.analyzers" Version="1.19.0" />
     <PackageVersion Include="System.Memory" Version="4.6.0" />
     <PackageVersion Include="IndexRange" Version="1.0.3" />
   </ItemGroup>

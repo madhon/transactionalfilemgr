@@ -4,31 +4,25 @@
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
     using System.Runtime.InteropServices;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Transactions;
-    using FluentAssertions;
+    using Shouldly;
     using Xunit;
 
     public sealed class FileManagerTests : IDisposable
     {
-        private readonly IFileManager _target;
-        private IList<string> _tempPaths;
+        private readonly IFileManager target = new TxFileManager();
+        private IList<string> tempPaths = [];
 
-        public FileManagerTests()
-        {
-            _target = new TxFileManager();
-            _tempPaths = new List<string>();
-            // TODO delete any temp files
-        }
+        // TODO delete any temp files
 
         public void Dispose()
         {
             // Delete temp files/dirs
-            foreach (string item in _tempPaths)
+            foreach (string item in tempPaths)
             {
                 if (File.Exists(item))
                 {
@@ -43,7 +37,7 @@
 
             var numTempFiles = Directory.GetFiles(Path.Combine(Path.GetTempPath(), "TxFileMgr-fc4eed76ee9b")).Length;
 
-            numTempFiles.Should().Be(0);
+            numTempFiles.ShouldBe(0);
         }
 
         #region Operations
@@ -56,11 +50,11 @@
 
             using (var scope1 = new TransactionScope())
             {
-                _target.AppendAllText(f1, contents);
+                target.AppendAllText(f1, contents);
                 scope1.Complete();
             }
 
-            File.ReadAllText(f1).Should().Be(contents);
+            File.ReadAllText(f1).ShouldBe(contents);
         }
 
         [Fact]
@@ -69,16 +63,10 @@
             var f1 = GetTempPathName();
             const string contents = "123";
 
-            using (var scope1 = new TransactionScope())
-            {
-                using (var fs = File.Open(f1, FileMode.OpenOrCreate, FileAccess.Read, FileShare.None))
-                {
-                    Action act = () => _target.AppendAllText(f1, contents);
-
-                    act.Should().Throw<IOException>()
-                        .Where(e => e.Message.Contains("The process cannot access the file"));
-                }
-            }
+            using var scope1 = new TransactionScope();
+            using var fs = File.Open(f1, FileMode.OpenOrCreate, FileAccess.Read, FileShare.None);
+            Action act = () => target.AppendAllText(f1, contents);
+            act.ShouldThrow<IOException>().Message.ShouldContain("The process cannot access the file");
         }
 
         [Fact]
@@ -88,11 +76,11 @@
             const string contents = "qwerty";
             using (var sc1 = new TransactionScope())
             {
-                _target.AppendAllText(f1, contents);
-                // without specifically committing, this should rollback
+                target.AppendAllText(f1, contents);
+                // without specifically committing, this should roll back
             }
 
-            File.Exists(f1).Should().BeFalse($"{f1} should not exist");
+            File.Exists(f1).ShouldBeFalse($"{f1} should not exist");
         }
 
         [Fact]
@@ -105,12 +93,12 @@
             using (var scope1 = new TransactionScope())
             {
                 File.WriteAllText(sourceFileName, expectedText);
-                _target.Copy(sourceFileName, destFileName, false);
+                target.Copy(sourceFileName, destFileName, false);
                 scope1.Complete();
             }
 
-            File.ReadAllText(sourceFileName).Should().Be(expectedText);
-            File.ReadAllText(destFileName).Should().Be(expectedText);
+            File.ReadAllText(sourceFileName).ShouldBe(expectedText);
+            File.ReadAllText(destFileName).ShouldBe(expectedText);
         }
 
         [Fact]
@@ -123,11 +111,11 @@
 
             using (var scope1 = new TransactionScope())
             {
-                _target.Copy(sourceFileName, destFileName, false);
-                // without specifically committing, this should rollback
+                target.Copy(sourceFileName, destFileName, false);
+                // without specifically committing, this should roll back
             }
 
-            File.Exists(destFileName).Should().BeFalse($"{destFileName} should not exist");
+            File.Exists(destFileName).ShouldBeFalse($"{destFileName} should not exist");
         }
 
         [Fact]
@@ -140,15 +128,15 @@
             {
                 using (var scope1 = new TransactionScope())
                 {
-                    _target.WriteAllText(f1, "test");
+                    target.WriteAllText(f1, "test");
 
-                    Action act = () => _target.Copy(f1, f2, false);
-                    act.Should().Throw<IOException>();
+                    Action act = () => target.Copy(f1, f2, false);
+                    act.ShouldThrow<IOException>();
                     //rollback
                 }
             }
 
-            File.Exists(f1).Should().BeFalse();
+            File.Exists(f1).ShouldBeFalse();
         }
 
         [Fact]
@@ -157,15 +145,15 @@
             var d1 = GetTempPathName();
             using (var scope1 = new TransactionScope())
             {
-                _target.CreateDirectory(d1);
+                target.CreateDirectory(d1);
                 scope1.Complete();
             }
 
-            Directory.Exists(d1).Should().BeTrue();
+            Directory.Exists(d1).ShouldBeTrue();
         }
 
         /// <summary>
-        /// Validate that we are able to create nested directotories and roll them back.
+        /// Validate that we are able to create nested directories and roll them back.
         /// </summary>
         [Fact]
         public void CanRollbackNestedDirectories()
@@ -176,12 +164,12 @@
             nested = Path.Combine(nested, "level2");
             using (new TransactionScope())
             {
-                _target.CreateDirectory(nested);
-                Directory.Exists(nested).Should().BeTrue();
+                target.CreateDirectory(nested);
+                Directory.Exists(nested).ShouldBeTrue();
             }
             
-            Directory.Exists(nested).Should().BeFalse();
-            Directory.Exists(baseDir).Should().BeTrue();
+            Directory.Exists(nested).ShouldBeFalse();
+            Directory.Exists(baseDir).ShouldBeTrue();
             Directory.Delete(baseDir);
         }
 
@@ -191,10 +179,10 @@
             var d1 = GetTempPathName();
             using (var scope1 = new TransactionScope())
             {
-                _target.CreateDirectory(d1);
+                target.CreateDirectory(d1);
             }
 
-            Directory.Exists(d1).Should().BeFalse();
+            Directory.Exists(d1).ShouldBeFalse();
         }
 
         [Fact]
@@ -205,10 +193,10 @@
 
             using (var scope1 = new TransactionScope())
             {
-                _target.DeleteDirectory(f1);
+                target.DeleteDirectory(f1);
                 scope1.Complete();
             }
-            Directory.Exists(f1).Should().BeFalse();
+            Directory.Exists(f1).ShouldBeFalse();
         }
 
         [Fact]
@@ -219,10 +207,10 @@
 
             using (var scope1 = new TransactionScope())
             {
-                _target.DeleteDirectory(f1);
+                target.DeleteDirectory(f1);
             }
 
-            Directory.Exists(f1).Should().BeTrue();
+            Directory.Exists(f1).ShouldBeTrue();
         }
 
         [Fact]
@@ -234,10 +222,10 @@
 
             using (var scope1 = new TransactionScope())
             {
-                _target.Delete(f1);
+                target.Delete(f1);
                 scope1.Complete();
             }
-            File.Exists(f1).Should().BeFalse();
+            File.Exists(f1).ShouldBeFalse();
         }
 
         [Fact]
@@ -249,11 +237,11 @@
 
             using (var scope1 = new TransactionScope())
             {
-                _target.Delete(f1);
+                target.Delete(f1);
             }
 
-            File.Exists(f1).Should().BeTrue();
-            File.ReadAllText(f1).Should().Be(contents);
+            File.Exists(f1).ShouldBeTrue();
+            File.ReadAllText(f1).ShouldBe(contents);
         }
 
         [Fact]
@@ -264,13 +252,11 @@
             var f2 = GetTempPathName();
             File.WriteAllText(f1, contents);
 
-            using (var scope1 = new TransactionScope())
-            {
-                File.Exists(f1).Should().BeTrue();
-                File.Exists(f2).Should().BeFalse();
-                _target.Move(f1, f2);
-                scope1.Complete();
-            }
+            using var scope1 = new TransactionScope();
+            File.Exists(f1).ShouldBeTrue();
+            File.Exists(f2).ShouldBeFalse();
+            target.Move(f1, f2);
+            scope1.Complete();
         }
 
         [Fact]
@@ -283,13 +269,13 @@
 
             using (new TransactionScope())
             {
-                File.Exists(f1).Should().BeTrue();
-                File.Exists(f2).Should().BeFalse();
-                _target.Move(f1, f2);
+                File.Exists(f1).ShouldBeTrue();
+                File.Exists(f2).ShouldBeFalse();
+                target.Move(f1, f2);
             }
 
-            File.ReadAllText(f1).Should().Be(contents);
-            File.Exists(f2).Should().BeFalse();
+            File.ReadAllText(f1).ShouldBe(contents);
+            File.Exists(f2).ShouldBeFalse();
         }
         
         [Fact]
@@ -299,14 +285,14 @@
             Directory.CreateDirectory(f1);
 
             using (var scope1 = new TransactionScope()) {
-                Directory.Exists(f1).Should().BeTrue();
-                Directory.Exists(f2).Should().BeFalse();
-                _target.MoveDirectory(f1, f2);
+                Directory.Exists(f1).ShouldBeTrue();
+                Directory.Exists(f2).ShouldBeFalse();
+                target.MoveDirectory(f1, f2);
                 scope1.Complete();
             }
 
-            Directory.Exists(f1).Should().BeFalse();
-            Directory.Exists(f2).Should().BeTrue();
+            Directory.Exists(f1).ShouldBeFalse();
+            Directory.Exists(f2).ShouldBeTrue();
         }
 
         [Fact]
@@ -316,13 +302,13 @@
             Directory.CreateDirectory(f1);
 
             using (new TransactionScope()) {
-                Directory.Exists(f1).Should().BeTrue();
-                Directory.Exists(f2).Should().BeFalse();
-                _target.MoveDirectory(f1, f2);
+                Directory.Exists(f1).ShouldBeTrue();
+                Directory.Exists(f2).ShouldBeFalse();
+                target.MoveDirectory(f1, f2);
             }
 
-            Directory.Exists(f1).Should().BeTrue();
-            Directory.Exists(f2).Should().BeFalse();
+            Directory.Exists(f1).ShouldBeTrue();
+            Directory.Exists(f2).ShouldBeFalse();
         }
 
         [Fact]
@@ -332,11 +318,11 @@
 
             using (var scope1 = new TransactionScope())
             {
-                _target.Snapshot(f1);
-                _target.AppendAllText(f1, "<test></test>");
+                target.Snapshot(f1);
+                target.AppendAllText(f1, "<test></test>");
             }
 
-            File.Exists(f1).Should().BeFalse();
+            File.Exists(f1).ShouldBeFalse();
         }
 
         [Fact]
@@ -348,11 +334,11 @@
 
             using (var scope1 = new TransactionScope())
             {
-                _target.WriteAllText(f1, contents);
+                target.WriteAllText(f1, contents);
                 scope1.Complete();
             }
 
-            File.ReadAllText(f1).Should().Be(contents);
+            File.ReadAllText(f1).ShouldBe(contents);
         }
 
         [Fact]
@@ -365,10 +351,10 @@
 
             using (var scope1 = new TransactionScope())
             {
-                _target.WriteAllText(f1, contents2);
+                target.WriteAllText(f1, contents2);
             }
 
-            File.ReadAllText(f1).Should().Be(contents1);
+            File.ReadAllText(f1).ShouldBe(contents1);
         }
 
 
@@ -381,11 +367,11 @@
 
             using (TransactionScope scope1 = new TransactionScope())
             {
-                _target.WriteAllText(f1, contents, Encoding.UTF8);
+                target.WriteAllText(f1, contents, Encoding.UTF8);
                 scope1.Complete();
             }
 
-            File.ReadAllText(f1).Should().Be(contents);
+            File.ReadAllText(f1).ShouldBe(contents);
         }
 
         [Fact]
@@ -398,10 +384,10 @@
 
             using (TransactionScope scope1 = new TransactionScope())
             {
-                _target.WriteAllText(f1, contents2, Encoding.UTF8);
+                target.WriteAllText(f1, contents2, Encoding.UTF8);
             }
 
-            File.ReadAllText(f1).Should().Be(contents1);
+            File.ReadAllText(f1).ShouldBe(contents1);
         }
 
         #endregion
@@ -426,17 +412,19 @@
                     {
                         using (var scope1 = new TransactionScope())
                         {
-                            _target.WriteAllText(f1, "Test.");
-                            _target.WriteAllText(f2, "Test.");
+                            target.WriteAllText(f1, "Test.");
+                            target.WriteAllText(f2, "Test.");
 
-                            FileInfo fi1 = new FileInfo(f1);
-                            fi1.Attributes = FileAttributes.ReadOnly;
+                            FileInfo fi1 = new FileInfo(f1)
+                            {
+                                Attributes = FileAttributes.ReadOnly,
+                            };
 
                             // rollback
                         }
                     };
 
-                    act.Should().Throw<TransactionException>().Where(e => e.Message.Contains("Failed to roll back."));
+                    act.ShouldThrow<TransactionException>().Message.ShouldContain("Failed to roll back.");
                 }
                 finally
                 {
@@ -460,11 +448,11 @@
 
                 using (var scope1 = new TransactionScope())
                 {
-                    _target.Copy(f1, f2, false);
+                    target.Copy(f1, f2, false);
 
                     // rollback
                 }
-                File.Exists(f2).Should().BeFalse();
+                File.Exists(f2).ShouldBeFalse();
             }
 
             {
@@ -473,12 +461,12 @@
 
                 using (var scope1 = new TransactionScope())
                 {
-                    _target.Delete(f1);
+                    target.Delete(f1);
 
                     // rollback
                 }
 
-                File.Exists(f1).Should().BeTrue();
+                File.Exists(f1).ShouldBeTrue();
             }
         }
 
@@ -489,12 +477,12 @@
             var f1 = GetTempPathName(".txt");
             using (var scope1 = new TransactionScope(TransactionScopeOption.Suppress))
             {
-                _target.WriteAllText(f1, contents);
+                target.WriteAllText(f1, contents);
             }
 
             // With TransactionScopeOption.Suppress - commit is implicit so our change should have been committed
             // without us doing a scope.Complete()
-            File.ReadAllText(f1).Should().Be(contents);
+            File.ReadAllText(f1).ShouldBe(contents);
         }
 
         [Fact]
@@ -509,40 +497,42 @@
 
             using (var sc1 = new TransactionScope())
             {
-                _target.WriteAllText(f1, f1Contents);
+                target.WriteAllText(f1, f1Contents);
 
                 using (var sc2 = new TransactionScope())
                 {
-                    _target.WriteAllText(f2, f2Contents);
+                    target.WriteAllText(f2, f2Contents);
                     sc2.Complete();
                 }
 
                 using (var sc3 = new TransactionScope(TransactionScopeOption.RequiresNew))
                 {
-                    _target.WriteAllText(f3, f3Contents);
+                    target.WriteAllText(f3, f3Contents);
                     sc3.Complete();
                 }
 
                 sc1.Dispose();
             }
-            File.Exists(f1).Should().BeFalse();
-            File.Exists(f2).Should().BeFalse();
-            File.Exists(f3).Should().BeTrue();
+            File.Exists(f1).ShouldBeFalse();
+            File.Exists(f2).ShouldBeFalse();
+            File.Exists(f3).ShouldBeTrue();
         }
 
         [Fact]
         public void CanDoMultiThreads()
         {
-            // Start each test in its own thread and repeat for a few interations
+            // Start each test in its own thread and repeat for a few iterations
             const int iterations = 25;
-            IList<Thread> threads = new List<Thread>();
-            BlockingCollection<Exception> exceptions = new BlockingCollection<Exception>();
+            IList<Thread> threads = [];
+            var exceptions = new BlockingCollection<Exception>();
 
-            Action[] actions = new Action[] { CanAppendAllText, AppendAllTextCanRollback, CanCopy, CanCopyAndRollback,
+            Action[] actions =
+            [
+                CanAppendAllText, AppendAllTextCanRollback, CanCopy, CanCopyAndRollback,
                 CanCreateDirectory, CanCreateDirectoryAndRollback, CanDeleteFile, CanDeleteFileAndRollback, CanMoveFile,
                 CanMoveFileAndRollback, CanSnapshot, CanWriteAllText, CanWriteAllTextAndRollback, CanNestTransactions,
-                ThrowException
-            };
+                ThrowException,
+            ];
             for (int i = 0; i < iterations; i++)
             {
                 foreach (Action action in actions)
@@ -558,7 +548,7 @@
                 t.Join();
             }
 
-            exceptions.Count.Should().Be(iterations);
+            exceptions.Count.ShouldBe(iterations);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
@@ -586,11 +576,11 @@
 
             using (TransactionScope scope1 = new TransactionScope())
             {
-                _target.AppendAllText(f1, contents);
+                target.AppendAllText(f1, contents);
                 scope1.Complete();
             }
 
-            TxFileManager.GetEnlistmentCount().Should().Be(0);
+            TxFileManager.GetEnlistmentCount().ShouldBe(0);
         }
 
         [Fact]
@@ -600,17 +590,17 @@
             var myTempPath = "\\temp-f8417ba5";
 
             var d1 = fm.CreateTempDirectory();
-            d1.Should().NotContain(myTempPath);
+            d1.ShouldNotContain(myTempPath);
 
             var f1 = fm.CreateTempFileName();
-            f1.Should().NotContain(myTempPath);
+            f1.ShouldNotContain(myTempPath);
 
             IFileManager fm2 = new TxFileManager(myTempPath);
             var d2 = fm2.CreateTempDirectory();
-            d2.Should().Contain(myTempPath);
+            d2.ShouldContain(myTempPath);
 
             var f2 = fm2.CreateTempFileName();
-            f2.Should().Contain(myTempPath);
+            f2.ShouldContain(myTempPath);
 
             Directory.Delete(d1);
             Directory.Delete(d2);
@@ -624,27 +614,29 @@
         public async Task HandlesAsync()
         {
             var scheduler = new ThreadedPerTaskScheduler();
-            async Task RunInNewThread(Func<Task> action)
-            {
-                await Task.Factory.StartNew(action, CancellationToken.None, TaskCreationOptions.None, scheduler);
-            }
             var ts = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
-            IFileManager fm = null;
+            TxFileManager fm = null;
             await RunInNewThread(() =>
             {
                 fm = new TxFileManager();
-                fm.WriteAllBytes("test", new byte[] { 1, 2, 3 });
+                fm.WriteAllBytes("test", [1, 2, 3]);
                 return Task.CompletedTask;
             });
             ts.Complete();
             ts.Dispose();
+            return;
+
+            async Task RunInNewThread(Func<Task> action)
+            {
+                await Task.Factory.StartNew(action, CancellationToken.None, TaskCreationOptions.None, scheduler);
+            }
         }
 
         private class ThreadedPerTaskScheduler : TaskScheduler
         {
             protected override IEnumerable<Task> GetScheduledTasks()
             {
-                return Enumerable.Empty<Task>();
+                return [];
             }
 
             protected override void QueueTask(Task task)
@@ -664,8 +656,8 @@
 
         private string GetTempPathName(string extension = "")
         {
-            string tempFile = _target.CreateTempFileName(extension);
-            _tempPaths.Add(tempFile);
+            string tempFile = target.CreateTempFileName(extension);
+            tempPaths.Add(tempFile);
             return tempFile;
         }
 

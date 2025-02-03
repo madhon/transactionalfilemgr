@@ -5,12 +5,26 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
 
+permissions: read-all
+  
 jobs:
   build:
     runs-on: ubuntu-22.04
-
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+      checks: write
+      pull-requests: write
+      
     steps:
+    - name: Harden the runner (Audit all outbound calls)
+      uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7618a84e # v2.10.4
+      with:
+        egress-policy: audit
+
     - name: Checkout Code  
       uses: actions/checkout@v4
       with:
@@ -72,7 +86,7 @@ jobs:
         retention-days: 5
 
     - name: Publish Test Results
-      uses: EnricoMi/publish-unit-test-result-action@v2
+      uses: step-security/publish-unit-test-result-action@v2
       if: always()
       with:
         trx_files: "${{ github.workspace }}/**/*.trx"

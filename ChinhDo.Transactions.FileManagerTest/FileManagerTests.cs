@@ -14,7 +14,7 @@
 
     public sealed class FileManagerTests : IDisposable
     {
-        private readonly IFileManager target = new TxFileManager();
+        private readonly TxFileManager target = new ();
         private IList<string> tempPaths = [];
 
         // TODO delete any temp files
@@ -22,7 +22,7 @@
         public void Dispose()
         {
             // Delete temp files/dirs
-            foreach (string item in tempPaths)
+            foreach (var item in tempPaths)
             {
                 if (File.Exists(item))
                 {

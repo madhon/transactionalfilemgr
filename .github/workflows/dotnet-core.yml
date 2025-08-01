@@ -29,7 +29,6 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: |
-          8.x
           9.x
 
     - name: Install dependencies
@@ -80,7 +79,7 @@ jobs:
         retention-days: 5
 
     - name: Publish Test Results
-      uses: step-security/publish-unit-test-result-action@v2
+      uses: EnricoMi/publish-unit-test-result-action@v2
       if: always()
       with:
-        trx_files: "${{ github.workspace }}/**/*.trx"
+        files: "${{ github.workspace }}/**/*.trx"

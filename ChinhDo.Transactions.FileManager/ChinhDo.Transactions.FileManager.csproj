@@ -72,6 +72,6 @@
   
   <ItemGroup>
     <PackageReference Include="System.Memory" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
-    <PackageReference Include="IndexRange" Condition="'$(TargetFramework)' == 'netstandard2.0'"/>
+    <PackageReference Include="Microsoft.Bcl.Memory" Condition="'$(TargetFramework)' == 'netstandard2.0'"/>
   </ItemGroup>
 </Project>

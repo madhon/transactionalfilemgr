@@ -17,6 +17,8 @@ jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-22.04
+    if: github.actor!= 'depbot'   # ignore the pull request which comes from user depbot.
+    
     permissions:
       actions: read
       contents: read

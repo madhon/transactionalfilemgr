@@ -56,7 +56,7 @@ namespace ChinhDo.Transactions
 #pragma warning restore S3626 // Jump statements should not be redundant
             }
 
-            Directory.CreateDirectory(_path);
+            OptimizedFileOperations.OptimizedCreateDirectory(_path);
             _backupPath = child;
         }
 

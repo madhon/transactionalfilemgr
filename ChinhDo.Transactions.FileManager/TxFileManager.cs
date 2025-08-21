@@ -24,7 +24,12 @@ namespace ChinhDo.Transactions
         public TxFileManager(string tempPath)
         {
             this._tempPath = Path.Combine(tempPath, "TxFileMgr-fc4eed76ee9b");
-            Directory.CreateDirectory(_tempPath); // This will create folder if neccessary
+            
+            // Only create directory if it doesn't exist to avoid unnecessary I/O
+            if (!Directory.Exists(_tempPath))
+            {
+                Directory.CreateDirectory(_tempPath);
+            }
         }
 
         #region IFileOperations
@@ -61,7 +66,7 @@ namespace ChinhDo.Transactions
             }
             else
             {
-                File.Copy(sourceFileName, destFileName, overwrite);
+                OptimizedFileOperations.OptimizedCopy(sourceFileName, destFileName, overwrite);
             }
         }
 
@@ -109,7 +114,7 @@ namespace ChinhDo.Transactions
             }
             else
             {
-                File.Move(srcFileName, destFileName);
+                OptimizedFileOperations.OptimizedMove(srcFileName, destFileName);
             }
         }
 
@@ -190,7 +195,15 @@ namespace ChinhDo.Transactions
         /// <param name="recursive">if set to <c>true</c>, include files in sub directories recursively.</param>
         public void GetFiles(string path, FileEventHandler handler, bool recursive)
         {
-            foreach (string fileName in Directory.GetFiles(path))
+            if (!Directory.Exists(path))
+                return;
+
+            // Use EnumerateFiles for better performance with large directories
+            var files = recursive 
+                ? Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
+                : Directory.EnumerateFiles(path);
+
+            foreach (string fileName in files)
             {
                 bool cancel = false;
                 handler(fileName, ref cancel);
@@ -199,22 +212,13 @@ namespace ChinhDo.Transactions
                     return;
                 }
             }
-
-            // Check subdirs
-            if (recursive)
-            {
-                foreach (string folderName in Directory.GetDirectories(path))
-                {
-                    GetFiles(folderName, handler, recursive);
-                }
-            }
         }
 
         public string CreateTempFileName(string extension)
         {
-            Guid g = Guid.NewGuid();
+            var g = Guid.NewGuid();
             string tempFolder = GetTempPath();
-            string ret = Path.Combine(tempFolder, g.ToString().Substring(0, 16)) + extension;
+            string ret = Path.Combine(tempFolder, g.ToString("N")[..16]) + extension;
             Snapshot(ret);
             return ret;
         }
@@ -232,15 +236,9 @@ namespace ChinhDo.Transactions
         public string CreateTempDirectory(string parentDirectory, string prefix)
         {
             var g = Guid.NewGuid();
+            string dirName = Path.Combine(parentDirectory, prefix + g.ToString("N")[..16]);
 
-            var gs = g.ToString().AsSpan();
-            var gss = gs[..16];
-
-            ReadOnlySpan<char> pth = [..prefix, ..gss];
-
-            string dirName = Path.Combine(parentDirectory, pth.ToString());
-
-            // TODO SnapShot Directory
+            // Snapshot directory for rollback
             CreateDirectory(dirName);
 
             return dirName;
@@ -267,10 +265,10 @@ namespace ChinhDo.Transactions
         /// <summary>Dictionary of transaction enlistment objects for the current thread.</summary>
         //[ThreadStatic] <-- Is this needed?
 #pragma warning disable S2223 // Non-constant static fields should not be visible
-        internal static Dictionary<string, TxEnlistment> _enlistments;
+        internal static Dictionary<string, TxEnlistment> _enlistments = new Dictionary<string, TxEnlistment>(StringComparer.OrdinalIgnoreCase);
 #pragma warning restore S2223 // Non-constant static fields should not be visible
         internal static readonly object _enlistmentsLock = new object();
-        private readonly string _tempPath = null;
+        private readonly string _tempPath;
 
         private static bool IsInTransaction()
         {
@@ -284,15 +282,11 @@ namespace ChinhDo.Transactions
 
             lock (_enlistmentsLock)
             {
-                if (_enlistments == null)
-                {
-                    _enlistments = new Dictionary<string, TxEnlistment>(StringComparer.OrdinalIgnoreCase);
-                }
-
-                if (!_enlistments.TryGetValue(tx.TransactionInformation.LocalIdentifier, out enlistment))
+                string txId = tx.TransactionInformation.LocalIdentifier;
+                if (!_enlistments.TryGetValue(txId, out enlistment))
                 {
                     enlistment = new TxEnlistment(tx);
-                    _enlistments.Add(tx.TransactionInformation.LocalIdentifier, enlistment);
+                    _enlistments.Add(txId, enlistment);
                 }
 
                 enlistment.EnlistOperation(operation);

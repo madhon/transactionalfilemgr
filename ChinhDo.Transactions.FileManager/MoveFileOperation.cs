@@ -19,13 +19,13 @@ namespace ChinhDo.Transactions
 
         public void Execute()
         {
-            File.Move(sourceFileName, destFileName);
+            OptimizedFileOperations.OptimizedMove(sourceFileName, destFileName);
         }
 
         public void Rollback()
         {
 #pragma warning disable S2234 // Parameters should be passed in the correct order
-            File.Move(destFileName, sourceFileName);
+            OptimizedFileOperations.OptimizedMove(destFileName, sourceFileName);
 #pragma warning restore S2234 // Parameters should be passed in the correct order
         }
     }

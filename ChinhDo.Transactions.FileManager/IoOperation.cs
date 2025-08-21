@@ -16,10 +16,7 @@ namespace ChinhDo.Transactions
         /// <summary>Ensures that the folder that contains the temporary files exists.</summary>
         public void EnsureTempFolderExists()
         {
-            if (!Directory.Exists(this._tempPath))
-            {
-                Directory.CreateDirectory(this._tempPath);
-            }
+            OptimizedFileOperations.OptimizedCreateDirectory(this._tempPath);
         }
 
         /// <summary>Returns a unique temporary file/directory name.</summary>
@@ -32,8 +29,8 @@ namespace ChinhDo.Transactions
         /// <param name="extension">File extension. Example: ".txt"</param>
         public string GetTempPathName(string extension)
         {
-            Guid g = Guid.NewGuid();
-            string retVal = Path.Combine(this._tempPath, g.ToString().Substring(0, 16)) + extension;
+            var g = Guid.NewGuid();
+            string retVal = Path.Combine(this._tempPath, g.ToString("N")[..16]) + extension;
 
             return retVal;
         }

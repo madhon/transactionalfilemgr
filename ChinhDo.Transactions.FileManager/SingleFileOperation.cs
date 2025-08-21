@@ -38,11 +38,11 @@ namespace ChinhDo.Transactions
             if (backupPath != null)
             {
                 string directory = Path.GetDirectoryName(path);
-                if (!Directory.Exists(directory))
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 {
-                    Directory.CreateDirectory(directory);
+                    OptimizedFileOperations.OptimizedCreateDirectory(directory);
                 }
-                File.Copy(backupPath, path, true);
+                OptimizedFileOperations.OptimizedCopy(backupPath, path, true);
             }
             else
             {

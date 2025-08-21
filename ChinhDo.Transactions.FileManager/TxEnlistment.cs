@@ -7,7 +7,7 @@ namespace ChinhDo.Transactions
     /// <summary>Provides two-phase commits/rollbacks/etc for a single <see cref="Transaction"/>.</summary>
     sealed class TxEnlistment : IEnlistmentNotification
     {
-        private readonly List<IRollbackableOperation> _journal = new List<IRollbackableOperation>();
+        private readonly List<IRollbackableOperation> _journal = [];
         private readonly string _txId;
 
         /// <summary>Initializes a new instance of the <see cref="TxEnlistment"/> class.</summary>
@@ -32,16 +32,28 @@ namespace ChinhDo.Transactions
 
         public void Commit(Enlistment enlistment)
         {
-            DisposeJournal();
-            enlistment.Done();
-            CleanUp();
+            try
+            {
+                DisposeJournal();
+            }
+            finally
+            {
+                enlistment.Done();
+                CleanUp();
+            }
         }
 
         public void InDoubt(Enlistment enlistment)
         {
-            DisposeJournal();
-            Rollback(enlistment);
-            CleanUp();
+            try
+            {
+                DisposeJournal();
+                Rollback(enlistment);
+            }
+            finally
+            {
+                CleanUp();
+            }
         }
 
         public void Prepare(PreparingEnlistment preparingEnlistment)
@@ -68,14 +80,19 @@ namespace ChinhDo.Transactions
             {
                 throw new TransactionException("Failed to roll back.", e);
             }
-
-            enlistment.Done();
-            CleanUp();
+            finally
+            {
+                enlistment.Done();
+                CleanUp();
+            }
         }
 
         private void CleanUp()
         {
-            TxFileManager._enlistments.Remove(this._txId);
+            lock (TxFileManager._enlistmentsLock)
+            {
+                TxFileManager._enlistments.Remove(this._txId);
+            }
         }
 
         private void DisposeJournal()

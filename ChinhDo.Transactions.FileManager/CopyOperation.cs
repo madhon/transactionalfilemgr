@@ -25,11 +25,11 @@ namespace ChinhDo.Transactions
             if (File.Exists(path))
             {
                 string temp = GetTempPathName(Path.GetExtension(path));
-                File.Copy(path, temp);
+                OptimizedFileOperations.OptimizedCopy(path, temp);
                 backupPath = temp;
             }
 
-            File.Copy(sourceFileName, path, overwrite);
+            OptimizedFileOperations.OptimizedCopy(sourceFileName, path, overwrite);
         }
     }
 }

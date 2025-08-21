@@ -8,7 +8,8 @@ namespace ChinhDo.Transactions
     /// </summary>
     internal static class OptimizedFileOperations
     {
-        private const int BufferSize = 81920; // 80KB buffer for better I/O performance
+        private const int BufferSize = 81_920; // 80KB buffer for better I/O performance
+        private const int SmallFileThreshold = 1024 * 1024; // 1MB threshold for small files
 
         /// <summary>
         /// Efficiently copies a file with buffered I/O for better performance on large files.

@@ -25,7 +25,7 @@ namespace ChinhDo.Transactions
 
             // For small files, use the standard copy method
             var sourceInfo = new FileInfo(sourceFileName);
-            if (sourceInfo.Length < 1024 * 1024) // 1MB threshold
+            if (sourceInfo.Length < SmallFileThreshold)
             {
                 File.Copy(sourceFileName, destFileName, overwrite);
                 return;

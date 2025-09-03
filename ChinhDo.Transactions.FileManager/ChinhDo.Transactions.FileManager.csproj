@@ -68,10 +68,18 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
+      <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+      </PackageReference>      
   </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="System.Memory" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
     <PackageReference Include="Microsoft.Bcl.Memory" Condition="'$(TargetFramework)' == 'netstandard2.0'"/>
   </ItemGroup>
+    
+    <ItemGroup>
+        <AdditionalFiles Include="..\BannedSymbols.txt" />
+    </ItemGroup>
 </Project>

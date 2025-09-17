@@ -39,7 +39,7 @@ jobs:
       run: dotnet build --configuration Release --no-restore
 
     - name: Test
-      run: dotnet test --configuration Release --no-build --no-restore --verbosity normal -- --report-trx --coverage
+      run: dotnet run --configuration Release --no-build --no-restore -- -coverage --coverage-output-format cobertura --report-trx
 
 #    - name: Combine Coverage Reports # This is because one report is produced per project, and we want one result for all of them.
 #      uses: danielpalme/ReportGenerator-GitHub-Action@v5

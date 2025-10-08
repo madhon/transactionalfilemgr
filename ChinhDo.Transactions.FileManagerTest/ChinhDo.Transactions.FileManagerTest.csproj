@@ -5,6 +5,7 @@
     <IsTestProject>true</IsTestProject>
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
     <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+    <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --report-trx --report-trx-filename testreport.trx</TestingPlatformCommandLineArguments>      
   </PropertyGroup>
     
   <ItemGroup>
@@ -19,4 +20,8 @@
   <ItemGroup>
     <ProjectReference Include="..\ChinhDo.Transactions.FileManager\ChinhDo.Transactions.FileManager.csproj" />
   </ItemGroup>
+    
+    <ItemGroup>
+        <Using Include="Shouldly" />
+    </ItemGroup>
 </Project>

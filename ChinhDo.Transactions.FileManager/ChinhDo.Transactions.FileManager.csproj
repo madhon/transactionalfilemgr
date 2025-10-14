@@ -51,6 +51,10 @@
   </ItemGroup>
     
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="MinVer">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -86,5 +90,7 @@
     
     <ItemGroup>
         <AdditionalFiles Include="..\BannedSymbols.txt" />
+        <AdditionalFiles Include="PublicAPI.Shipped.txt" />
+        <AdditionalFiles Include="PublicAPI.Unshipped.txt" />
     </ItemGroup>
 </Project>

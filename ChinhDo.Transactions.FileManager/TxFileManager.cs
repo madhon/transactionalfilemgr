@@ -191,9 +191,9 @@ namespace ChinhDo.Transactions
 
         /// <summary>Gets the files in the specified directory.</summary>
         /// <param name="path">The directory to get files.</param>
-        /// <param name="handler">The <see cref="FileEventHandler"/> object to call on each file found.</param>
+        /// <param name="handler">The <see cref="FileEvent"/> object to call on each file found.</param>
         /// <param name="recursive">if set to <c>true</c>, include files in sub directories recursively.</param>
-        public void GetFiles(string path, FileEventHandler handler, bool recursive)
+        public void GetFiles(string path, FileEvent handler, bool recursive)
         {
             if (!Directory.Exists(path))
                 return;

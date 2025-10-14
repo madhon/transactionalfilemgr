@@ -5,7 +5,7 @@ namespace ChinhDo.Transactions
     /// <summary>
     /// Classes implementing this interface provide methods to work with files.
     /// </summary>
-    public interface IFileManager 
+    public interface IFileManager
     {
 
         /// <summary>

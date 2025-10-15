@@ -39,7 +39,7 @@ jobs:
       run: dotnet build --configuration Release --no-restore
 
     - name: Test
-      run: dotnet run --project ChinhDo.Transactions.FileManagerTest/ChinhDo.Transactions.FileManagerTest.csproj --configuration Release --no-build --no-restore -- -coverage --coverage-output-format cobertura --report-trx
+      run: dotnet run --project ChinhDo.Transactions.FileManagerTest/ChinhDo.Transactions.FileManagerTest.csproj --configuration Release --no-build --no-restore 
 
 #    - name: Combine Coverage Reports # This is because one report is produced per project, and we want one result for all of them.
 #      uses: danielpalme/ReportGenerator-GitHub-Action@v5

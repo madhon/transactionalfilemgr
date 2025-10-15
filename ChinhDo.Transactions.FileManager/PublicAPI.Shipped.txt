@@ -32,7 +32,6 @@ ChinhDo.Transactions.TxFileManager.DeleteDirectory(string path) -> void
 ChinhDo.Transactions.TxFileManager.DirectoryExists(string path) -> bool
 ChinhDo.Transactions.TxFileManager.FileExists(string path) -> bool
 ChinhDo.Transactions.TxFileManager.GetFiles(string path, ChinhDo.Transactions.FileEvent handler, bool recursive) -> void
-ChinhDo.Transactions.TxFileManager.GetTempPath() -> string
 ChinhDo.Transactions.TxFileManager.Move(string srcFileName, string destFileName) -> void
 ChinhDo.Transactions.TxFileManager.MoveDirectory(string srcDirName, string destDirName) -> void
 ChinhDo.Transactions.TxFileManager.Snapshot(string fileName) -> void
@@ -41,4 +40,5 @@ ChinhDo.Transactions.TxFileManager.TxFileManager(string tempPath) -> void
 ChinhDo.Transactions.TxFileManager.WriteAllBytes(string path, byte[] contents) -> void
 ChinhDo.Transactions.TxFileManager.WriteAllText(string path, string contents) -> void
 ChinhDo.Transactions.TxFileManager.WriteAllText(string path, string contents, System.Text.Encoding encoding) -> void
-static ChinhDo.Transactions.TxFileManager.GetEnlistmentCount() -> int
+ChinhDo.Transactions.TxFileManager.GetTempPath.get -> string
+static ChinhDo.Transactions.TxFileManager.GetEnlistmentCount.get -> int

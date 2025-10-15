@@ -472,7 +472,9 @@ public sealed class FileManagerTests
         // Start each test in its own thread and repeat for a few iterations
         const int iterations = 25;
         IList<Thread> threads = [];
+#pragma warning disable CA2000
         var exceptions = new BlockingCollection<Exception>();
+#pragma warning restore CA2000
         Action[] actions = [CanAppendAllText, AppendAllTextCanRollback, CanCopy, CanCopyAndRollback, CanCreateDirectory, CanCreateDirectoryAndRollback, CanDeleteFile, CanDeleteFileAndRollback, CanMoveFile, CanMoveFileAndRollback, CanSnapshot, CanWriteAllText, CanWriteAllTextAndRollback, CanNestTransactions, ThrowException, ];
         for (int i = 0; i < iterations; i++)
         {
@@ -521,19 +523,19 @@ public sealed class FileManagerTests
             scope1.Complete();
         }
 
-        TxFileManager.GetEnlistmentCount().ShouldBe(0);
+        TxFileManager.GetEnlistmentCount.ShouldBe(0);
     }
 
     [Test]
     public void CanSetCustomTempPath()
     {
-        IFileManager fm = new TxFileManager();
+        TxFileManager fm = new TxFileManager();
         var myTempPath = "\\temp-f8417ba5";
         var d1 = fm.CreateTempDirectory();
         d1.ShouldNotContain(myTempPath);
         var f1 = fm.CreateTempFileName();
         f1.ShouldNotContain(myTempPath);
-        IFileManager fm2 = new TxFileManager(myTempPath);
+        TxFileManager fm2 = new TxFileManager(myTempPath);
         var d2 = fm2.CreateTempDirectory();
         d2.ShouldContain(myTempPath);
         var f2 = fm2.CreateTempFileName();
@@ -565,7 +567,7 @@ public sealed class FileManagerTests
         }
     }
 
-    private class ThreadedPerTaskScheduler : System.Threading.Tasks.TaskScheduler
+    private sealed class ThreadedPerTaskScheduler : System.Threading.Tasks.TaskScheduler
     {
         protected override IEnumerable<Task> GetScheduledTasks()
         {
@@ -597,7 +599,9 @@ public sealed class FileManagerTests
 
     private void ThrowException()
     {
+#pragma warning disable CA2201
         throw new Exception("Test.");
+#pragma warning restore CA2201
     }
 
     [After(Test)]

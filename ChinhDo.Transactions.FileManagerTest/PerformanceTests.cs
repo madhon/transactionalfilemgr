@@ -3,12 +3,13 @@ namespace ChinhDo.Transactions.FileManagerTest;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Security.Cryptography;
 using System.Transactions;
 
 /// <summary>
 /// Performance tests to demonstrate optimizations in the TxFileManager
 /// </summary>
-public class PerformanceTests
+public sealed class PerformanceTests
 {
     private readonly TxFileManager _txFileManager;
     private readonly string _tempDirectory;
@@ -25,7 +26,7 @@ public class PerformanceTests
         // Create a large test file (1MB)
         const int fileSize = 1024 * 1024;
         byte[] testData = new byte[fileSize];
-        new Random().NextBytes(testData);
+        RandomNumberGenerator.Fill(testData);
         string sourceFile = Path.Combine(_tempDirectory, "source.dat");
         string destFile = Path.Combine(_tempDirectory, "dest.dat");
         File.WriteAllBytes(sourceFile, testData);
@@ -91,7 +92,7 @@ public class PerformanceTests
 
         stopwatch.Stop();
         // Verify cleanup worked properly
-        TxFileManager.GetEnlistmentCount().ShouldBe(0);
+        TxFileManager.GetEnlistmentCount.ShouldBe(0);
         // Performance should be reasonable
         stopwatch.ElapsedMilliseconds.ShouldBeLessThan(2000);
     }

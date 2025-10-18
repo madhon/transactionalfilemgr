@@ -6,7 +6,7 @@
     <NoWarn>$(NoWarn);NU1507;CA1515:</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Meziantou.Analyzer" Version="2.0.226" />
+    <PackageVersion Include="Meziantou.Analyzer" Version="2.0.227" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="9.0.10" />
     <PackageVersion Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.3.4" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />

@@ -21,6 +21,7 @@ public sealed class PerformanceTests
     }
 
     [Test]
+    [NotInParallel]
     public void MeasureLargeFileCopyPerformance()
     {
         // Create a large test file (1MB)
@@ -42,6 +43,7 @@ public sealed class PerformanceTests
     }
 
     [Test]
+    [NotInParallel]
     public void MeasureTransactionalOperationsPerformance()
     {
         const int operationCount = 100;
@@ -76,6 +78,7 @@ public sealed class PerformanceTests
     }
 
     [Test]
+    [NotInParallel]
     public void MeasureEnlistmentCleanupPerformance()
     {
         const int transactionCount = 10;

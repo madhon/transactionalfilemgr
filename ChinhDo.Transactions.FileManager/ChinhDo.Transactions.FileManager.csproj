@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net9.0</TargetFrameworks>
     <LangVersion>13.0</LangVersion>
+    <Nullable>enable</Nullable>
     <Company>Chinh Do</Company>
     <Copyright>© 2008 Chinh Do https://www.chinhdo.com</Copyright>
     <PackageId>ChinhDo.Transactions</PackageId>

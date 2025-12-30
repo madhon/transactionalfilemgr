@@ -8,7 +8,7 @@ namespace ChinhDo.Transactions
     sealed class CreateDirectoryOperation : IoOperation, IRollbackableOperation, System.IDisposable
     {
         private readonly string _path;
-        private string _backupPath;
+        private string? _backupPath;
         private bool _disposed;
 
         /// <summary>Instantiates the class.</summary>

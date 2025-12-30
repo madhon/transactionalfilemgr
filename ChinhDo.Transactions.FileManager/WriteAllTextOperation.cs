@@ -9,8 +9,8 @@ namespace ChinhDo.Transactions
     /// </summary>
     sealed class WriteAllTextOperation : SingleFileOperation
     {
-        private readonly string contents;
-        private readonly Encoding encoding;
+        private readonly string? contents;
+        private readonly Encoding? encoding;
 
         /// <summary>Instantiates the class.</summary>
         /// <param name="tempPath">Path to temp directory.</param>

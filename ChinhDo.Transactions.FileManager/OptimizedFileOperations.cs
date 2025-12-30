@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.IO;
 
 namespace ChinhDo.Transactions
@@ -33,11 +34,38 @@ namespace ChinhDo.Transactions
             }
 
             // For larger files, use buffered copy for better performance
-            using var sourceStream = new FileStream(sourceFileName, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize, FileOptions.SequentialScan);
-            using var destStream = new FileStream(destFileName, FileMode.Create, FileAccess.Write, FileShare.None, BufferSize, FileOptions.WriteThrough);
-            
-            sourceStream.CopyTo(destStream, BufferSize);
-            destStream.Flush(true);
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+
+            try
+            {
+                using var source = new FileStream(
+                    sourceFileName,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.Read,
+                    BufferSize,
+                    FileOptions.SequentialScan);
+
+                using var dest = new FileStream(
+                    destFileName,
+                    overwrite ? FileMode.Create : FileMode.CreateNew,
+                    FileAccess.Write,
+                    FileShare.None,
+                    BufferSize,
+                    FileOptions.SequentialScan);
+
+                int bytesRead;
+                while ((bytesRead = source.Read(buffer, 0, buffer.Length)) != 0)
+                {
+                    dest.Write(buffer, 0, bytesRead);
+                }
+
+                dest.Flush();
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
         }
 
         /// <summary>

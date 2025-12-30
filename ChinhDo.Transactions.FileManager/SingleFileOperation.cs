@@ -11,7 +11,7 @@ namespace ChinhDo.Transactions
     abstract class SingleFileOperation : IoOperation, IRollbackableOperation, IDisposable
     {
         protected readonly string path;
-        protected string backupPath;
+        protected string? backupPath;
         // tracks whether Dispose has been called
         private bool disposed;
 

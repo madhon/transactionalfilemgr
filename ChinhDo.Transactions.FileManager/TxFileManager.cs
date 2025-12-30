@@ -38,7 +38,7 @@ namespace ChinhDo.Transactions
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new AppendAllTextOperation(this.GetTempPath, path, contents, null));
+                EnlistOperation(new AppendAllTextOperation(this.GetTempPath, path, contents, null!));
             }
             else
             {

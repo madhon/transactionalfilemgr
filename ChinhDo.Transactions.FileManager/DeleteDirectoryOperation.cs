@@ -9,7 +9,7 @@ namespace ChinhDo.Transactions
     sealed class DeleteDirectoryOperation : IoOperation, IRollbackableOperation, IDisposable
     {
         private readonly string path;
-        private string backupPath;
+        private string? backupPath;
         // tracks whether Dispose has been called
         private bool disposed;
 

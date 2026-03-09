@@ -10,13 +10,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
 
+[NotInParallel]
 public sealed class FileManagerTests
 {
     private readonly TxFileManager target = new();
     private IList<string> tempPaths = [];
-    #region Operations
+
     [Test]
-    [NotInParallel]
     public void CanAppendAllText()
     {
         var f1 = GetTempPathName();
@@ -31,7 +31,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void AppendAllTexHandlesException()
     {
         var f1 = GetTempPathName();
@@ -43,7 +42,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void AppendAllTextCanRollback()
     {
         var f1 = GetTempPathName();
@@ -58,7 +56,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanCopy()
     {
         var sourceFileName = GetTempPathName();
@@ -76,7 +73,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanCopyAndRollback()
     {
         var sourceFileName = GetTempPathName();
@@ -93,7 +89,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanHandleCopyErrors()
     {
         var f1 = GetTempPathName();
@@ -113,7 +108,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanCreateDirectory()
     {
         var d1 = GetTempPathName();
@@ -130,7 +124,6 @@ public sealed class FileManagerTests
     /// Validate that we are able to create nested directories and roll them back.
     /// </summary>
     [Test]
-    [NotInParallel]
     public void CanRollbackNestedDirectories()
     {
         var baseDir = GetTempPathName();
@@ -149,7 +142,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanCreateDirectoryAndRollback()
     {
         var d1 = GetTempPathName();
@@ -177,7 +169,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanDeleteDirectoryAndRollback()
     {
         var f1 = GetTempPathName();
@@ -191,7 +182,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanDeleteFile()
     {
         var f1 = GetTempPathName();
@@ -207,7 +197,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanDeleteFileAndRollback()
     {
         var f1 = GetTempPathName();
@@ -223,7 +212,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanMoveFile()
     {
         const string contents = "abc";
@@ -238,7 +226,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanMoveFileAndRollback()
     {
         const string contents = "abc";
@@ -257,7 +244,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanMoveDirectory()
     {
         var f1 = GetTempPathName();
@@ -276,7 +262,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanMoveDirectoryAndRollback()
     {
         var f1 = GetTempPathName();
@@ -294,7 +279,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanSnapshot()
     {
         var f1 = GetTempPathName();
@@ -308,7 +292,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanWriteAllText()
     {
         var f1 = GetTempPathName();
@@ -324,7 +307,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanWriteAllTextAndRollback()
     {
         var f1 = GetTempPathName();
@@ -340,7 +322,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanWriteAllTextWithEncoding()
     {
         string f1 = GetTempPathName();
@@ -356,7 +337,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanWriteAllTextWithEncodingAndRollback()
     {
         string f1 = GetTempPathName();
@@ -371,10 +351,7 @@ public sealed class FileManagerTests
         File.ReadAllText(f1).ShouldBe(contents1);
     }
 
-    #endregion
-    #region Transaction Support
     [Test]
-    [NotInParallel]
     public void ThrowExceptionIfCannotRollback()
     {
         // Run this test on Windows only
@@ -414,7 +391,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanReuseManager()
     {
         {
@@ -444,7 +420,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanSupportTransactionScopeOptionSuppress()
     {
         const string contents = "abc";
@@ -460,7 +435,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanNestTransactions()
     {
         var f1 = GetTempPathName(".txt");
@@ -493,7 +467,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanDoMultiThreads()
     {
         // Start each test in its own thread and repeat for a few iterations
@@ -537,10 +510,7 @@ public sealed class FileManagerTests
         }
     }
 
-    #endregion
-    #region Other
     [Test]
-    [NotInParallel]
     public void ItRemovesCompletedEnlistments()
     {
         string f1 = GetTempPathName();
@@ -555,7 +525,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public void CanSetCustomTempPath()
     {
         TxFileManager fm = new TxFileManager();
@@ -576,7 +545,6 @@ public sealed class FileManagerTests
     }
 
     [Test]
-    [NotInParallel]
     public async Task HandlesAsync()
     {
         var scheduler = new ThreadedPerTaskScheduler();
@@ -597,7 +565,7 @@ public sealed class FileManagerTests
         }
     }
 
-    private sealed class ThreadedPerTaskScheduler : System.Threading.Tasks.TaskScheduler
+    private sealed class ThreadedPerTaskScheduler : TaskScheduler
     {
         protected override IEnumerable<Task> GetScheduledTasks()
         {
@@ -618,11 +586,9 @@ public sealed class FileManagerTests
         }
     }
 
-    #endregion
-    #region Private
     private string GetTempPathName(string extension = "")
     {
-        string tempFile = target.CreateTempFileName(extension);
+        var tempFile = target.CreateTempFileName(extension);
         tempPaths.Add(tempFile);
         return tempFile;
     }
@@ -655,5 +621,4 @@ public sealed class FileManagerTests
         var numTempFiles = Directory.GetFiles(Path.Combine(Path.GetTempPath(), "TxFileMgr-fc4eed76ee9b")).Length;
         numTempFiles.ShouldBe(0);
     }
-    #endregion
 }

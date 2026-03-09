@@ -9,10 +9,12 @@ using System.Transactions;
 /// <summary>
 /// Performance tests to demonstrate optimizations in the TxFileManager
 /// </summary>
+[NotInParallel]
 public sealed class PerformanceTests
 {
     private readonly TxFileManager _txFileManager;
     private readonly string _tempDirectory;
+    
     public PerformanceTests()
     {
         _tempDirectory = Path.Combine(Path.GetTempPath(), "TxFileManagerPerfTests", Guid.NewGuid().ToString("N")[..8]);
@@ -21,7 +23,6 @@ public sealed class PerformanceTests
     }
 
     [Test]
-    [NotInParallel]
     public void MeasureLargeFileCopyPerformance()
     {
         // Create a large test file (1MB)
@@ -43,7 +44,6 @@ public sealed class PerformanceTests
     }
 
     [Test]
-    [NotInParallel]
     public void MeasureTransactionalOperationsPerformance()
     {
         const int operationCount = 100;
@@ -78,7 +78,6 @@ public sealed class PerformanceTests
     }
 
     [Test]
-    [NotInParallel]
     public void MeasureEnlistmentCleanupPerformance()
     {
         const int transactionCount = 10;

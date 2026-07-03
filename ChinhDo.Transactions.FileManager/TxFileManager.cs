@@ -11,7 +11,7 @@ namespace ChinhDo.Transactions
     /// File Resource Manager. Allows inclusion of file system operations in transactions (<see cref="System.Transactions"/>).
     /// https://www.chinhdo.com/20080825/transactional-file-manager/
     /// </summary>
-    public class TxFileManager : IFileManager
+    public sealed class TxFileManager : IFileManager
     {
         /// <summary>Create a new instance of <see cref="TxFileManager"/> class. Feel free to create new instances or re-use existing instances./// </summary>
         public TxFileManager() : this(Path.GetTempPath())

@@ -43,3 +43,4 @@ ChinhDo.Transactions.TxFileManager.WriteAllBytes(string! path, byte[]! contents)
 ChinhDo.Transactions.TxFileManager.WriteAllText(string! path, string! contents) -> void
 ChinhDo.Transactions.TxFileManager.WriteAllText(string! path, string! contents, System.Text.Encoding! encoding) -> void
 static ChinhDo.Transactions.TxFileManager.GetEnlistmentCount.get -> int
+virtual ChinhDo.Transactions.FileEvent.Invoke(string! fileName, ref bool cancel) -> void

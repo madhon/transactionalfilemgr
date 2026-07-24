@@ -3,6 +3,7 @@ namespace ChinhDo.Transactions.FileManagerTest;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Abstractions;
 using System.Security.Cryptography;
 using System.Transactions;
 
@@ -13,13 +14,15 @@ using System.Transactions;
 public sealed class PerformanceTests
 {
     private readonly TxFileManager _txFileManager;
+    private readonly IFileSystem _fileSystem;
     private readonly string _tempDirectory;
     
     public PerformanceTests()
     {
-        _tempDirectory = Path.Combine(Path.GetTempPath(), "TxFileManagerPerfTests", Guid.NewGuid().ToString("N")[..8]);
-        Directory.CreateDirectory(_tempDirectory);
-        _txFileManager = new TxFileManager(_tempDirectory);
+        _fileSystem = new FileSystem();
+        _tempDirectory = _fileSystem.Path.Combine(Path.GetTempPath(), "TxFileManagerPerfTests", Guid.NewGuid().ToString("N")[..8]);
+        _fileSystem.Directory.CreateDirectory(_tempDirectory);
+        _txFileManager = new TxFileManager(_fileSystem, _tempDirectory);
     }
 
     [Test]
@@ -29,15 +32,15 @@ public sealed class PerformanceTests
         const int fileSize = 1024 * 1024;
         byte[] testData = new byte[fileSize];
         RandomNumberGenerator.Fill(testData);
-        string sourceFile = Path.Combine(_tempDirectory, "source.dat");
-        string destFile = Path.Combine(_tempDirectory, "dest.dat");
-        File.WriteAllBytes(sourceFile, testData);
+        string sourceFile = _fileSystem.Path.Combine(_tempDirectory, "source.dat");
+        string destFile = _fileSystem.Path.Combine(_tempDirectory, "dest.dat");
+        _fileSystem.File.WriteAllBytes(sourceFile, testData);
         // Measure copy performance
         var stopwatch = Stopwatch.StartNew();
         _txFileManager.Copy(sourceFile, destFile, false);
         stopwatch.Stop();
         // Verify file was copied correctly
-        var copiedData = File.ReadAllBytes(destFile);
+        var copiedData = _fileSystem.File.ReadAllBytes(destFile);
         copiedData.Length.ShouldBe(testData.Length);
         // Performance should be reasonable (under 1 second for 1MB)
         stopwatch.ElapsedMilliseconds.ShouldBeLessThan(1000);
@@ -51,7 +54,7 @@ public sealed class PerformanceTests
         // Prepare test files
         for (int i = 0; i < operationCount; i++)
         {
-            files[i] = Path.Combine(_tempDirectory, $"file_{i:D4}.txt");
+            files[i] = _fileSystem.Path.Combine(_tempDirectory, $"file_{i:D4}.txt");
         }
 
         // Measure transactional write performance
@@ -84,7 +87,7 @@ public sealed class PerformanceTests
         var stopwatch = Stopwatch.StartNew();
         for (int i = 0; i < transactionCount; i++)
         {
-            string testFile = Path.Combine(_tempDirectory, $"cleanup_test_{i}.txt");
+            string testFile = _fileSystem.Path.Combine(_tempDirectory, $"cleanup_test_{i}.txt");
             using (var scope = new TransactionScope())
             {
                 _txFileManager.WriteAllText(testFile, "test content");
@@ -102,9 +105,9 @@ public sealed class PerformanceTests
     [After(Test)]
     public void Dispose()
     {
-        if (Directory.Exists(_tempDirectory))
+        if (_fileSystem.Directory.Exists(_tempDirectory))
         {
-            Directory.Delete(_tempDirectory, true);
+            _fileSystem.Directory.Delete(_tempDirectory, true);
         }
     }
 }

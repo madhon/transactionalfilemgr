@@ -3,6 +3,8 @@ using System.IO;
 
 namespace ChinhDo.Transactions
 {
+    using System.IO.Abstractions;
+
     /// <summary>
     /// Deletes the specified directory and all its contents.
     /// </summary>
@@ -14,9 +16,10 @@ namespace ChinhDo.Transactions
         private bool disposed;
 
         /// <summary>Instantiates the class.</summary>
+        /// <param name="fileSystem">The file system abstraction.</param>
         /// <param name="tempPath">Path to temp directory</param>
         /// <param name="path">The directory path to delete.</param>
-        public DeleteDirectoryOperation(string tempPath, string path) : base(tempPath)
+        public DeleteDirectoryOperation(IFileSystem fileSystem, string tempPath, string path) : base(fileSystem, tempPath)
         {
             this.path = path;
         }
@@ -31,7 +34,7 @@ namespace ChinhDo.Transactions
 
         public void Execute()
         {
-            if (Directory.Exists(path))
+            if (_fileSystem.Directory.Exists(path))
             {
                 string temp = GetTempPathName();
                 MoveDirectory(path, temp);
@@ -41,12 +44,12 @@ namespace ChinhDo.Transactions
 
         public void Rollback()
         {
-            if (Directory.Exists(backupPath))
+            if (_fileSystem.Directory.Exists(backupPath))
             {
-                string parentDirectory = Path.GetDirectoryName(path);
-                if (!Directory.Exists(parentDirectory))
+                var parentDirectory = _fileSystem.Path.GetDirectoryName(path);
+                if (!_fileSystem.Directory.Exists(parentDirectory))
                 {
-                    Directory.CreateDirectory(parentDirectory);
+                    _fileSystem.Directory.CreateDirectory(parentDirectory);
                 }
                 MoveDirectory(backupPath, path);
             }
@@ -65,9 +68,9 @@ namespace ChinhDo.Transactions
         /// Moves a directory, recursively, from one path to another.
 		/// This is a version of <see cref="Directory.Move"/> that works across volumes.
         /// </summary>
-        private static void MoveDirectory(string sourcePath, string destinationPath)
+        private void MoveDirectory(string sourcePath, string destinationPath)
         {
-            if (string.Equals(Directory.GetDirectoryRoot(sourcePath), Directory.GetDirectoryRoot(destinationPath), StringComparison.Ordinal))
+            if (string.Equals(_fileSystem.Directory.GetDirectoryRoot(sourcePath), _fileSystem.Directory.GetDirectoryRoot(destinationPath), StringComparison.Ordinal))
             {
                 // The source and destination volumes are the same, so we can do the much less expensive Directory.Move.
                 Directory.Move(sourcePath, destinationPath);
@@ -75,27 +78,29 @@ namespace ChinhDo.Transactions
             else
             {
                 // The source and destination volumes are different, so we have to resort to a copy/delete.
-                CopyDirectory(new DirectoryInfo(sourcePath), new DirectoryInfo(destinationPath));
-                Directory.Delete(sourcePath, true);
+                CopyDirectory(_fileSystem.DirectoryInfo.New(sourcePath), _fileSystem.DirectoryInfo.New(destinationPath));
+                _fileSystem.Directory.Delete(sourcePath, true);
             }
         }
 
-        private static void CopyDirectory(DirectoryInfo sourceDirectory, DirectoryInfo destinationDirectory)
+        private void CopyDirectory(IDirectoryInfo sourceDirectory, IDirectoryInfo destinationDirectory)
         {
             if (!destinationDirectory.Exists)
             {
                 destinationDirectory.Create();
             }
 
-            foreach (FileInfo sourceFile in sourceDirectory.GetFiles())
+            foreach (IFileInfo sourceFile in sourceDirectory.GetFiles())
             {
-                sourceFile.CopyTo(Path.Combine(destinationDirectory.FullName, sourceFile.Name));
+                sourceFile.CopyTo(_fileSystem.Path.Combine(destinationDirectory.FullName, sourceFile.Name));
             }
 
-            foreach (DirectoryInfo sourceSubDirectory in sourceDirectory.GetDirectories())
+            foreach (IDirectoryInfo sourceSubDirectory in sourceDirectory.GetDirectories())
             {
-                string destinationSubDirectoryPath = Path.Combine(destinationDirectory.FullName, sourceSubDirectory.Name);
-                CopyDirectory(sourceSubDirectory, new DirectoryInfo(destinationSubDirectoryPath));
+                string destinationSubDirectoryPath = _fileSystem.Path.Combine(destinationDirectory.FullName, sourceSubDirectory.Name);
+                var destinationSubDirectory = _fileSystem.DirectoryInfo.New(destinationSubDirectoryPath);
+
+                CopyDirectory(sourceSubDirectory, destinationSubDirectory);
             }
         }
 
@@ -106,9 +111,9 @@ namespace ChinhDo.Transactions
         {
             if (!disposed)
             {
-                if (Directory.Exists(backupPath))
+                if (_fileSystem.Directory.Exists(backupPath))
                 {
-                    Directory.Delete(backupPath, true);
+                    _fileSystem.Directory.Delete(backupPath, true);
                 }
 
                 disposed = true;

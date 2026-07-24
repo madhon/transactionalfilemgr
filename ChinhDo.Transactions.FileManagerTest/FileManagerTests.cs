@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions.TestingHelpers;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -527,21 +528,27 @@ public sealed class FileManagerTests
     [Test]
     public void CanSetCustomTempPath()
     {
-        TxFileManager fm = new TxFileManager();
-        var myTempPath = "\\temp-f8417ba5";
+        var mockFs = new MockFileSystem();
+        mockFs.AddDirectory(@"M:\temp-f8417ba5");
+        
+        var fm = new TxFileManager();
+        const string myTempPath = @"M:\temp-f8417ba5";
+        
         var d1 = fm.CreateTempDirectory();
         d1.ShouldNotContain(myTempPath);
         var f1 = fm.CreateTempFileName();
         f1.ShouldNotContain(myTempPath);
-        TxFileManager fm2 = new TxFileManager(myTempPath);
+        var fm2 = new TxFileManager(mockFs, @"M:\temp-f8417ba5");
         var d2 = fm2.CreateTempDirectory();
         d2.ShouldContain(myTempPath);
         var f2 = fm2.CreateTempFileName();
         f2.ShouldContain(myTempPath);
+        
         Directory.Delete(d1);
-        Directory.Delete(d2);
         File.Delete(f1);
-        File.Delete(f2);
+        
+        mockFs.Directory.Delete(d2);
+        mockFs.File.Delete(f2);
     }
 
     [Test]

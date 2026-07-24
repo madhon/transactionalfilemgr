@@ -38,9 +38,10 @@ ChinhDo.Transactions.TxFileManager.Move(string! srcFileName, string! destFileNam
 ChinhDo.Transactions.TxFileManager.MoveDirectory(string! srcDirName, string! destDirName) -> void
 ChinhDo.Transactions.TxFileManager.Snapshot(string! fileName) -> void
 ChinhDo.Transactions.TxFileManager.TxFileManager() -> void
-ChinhDo.Transactions.TxFileManager.TxFileManager(string! tempPath) -> void
 ChinhDo.Transactions.TxFileManager.WriteAllBytes(string! path, byte[]! contents) -> void
 ChinhDo.Transactions.TxFileManager.WriteAllText(string! path, string! contents) -> void
 ChinhDo.Transactions.TxFileManager.WriteAllText(string! path, string! contents, System.Text.Encoding! encoding) -> void
 static ChinhDo.Transactions.TxFileManager.GetEnlistmentCount.get -> int
 virtual ChinhDo.Transactions.FileEvent.Invoke(string! fileName, ref bool cancel) -> void
+ChinhDo.Transactions.TxFileManager.TxFileManager(System.IO.Abstractions.IFileSystem! fileSystem, string! tempPath) -> void
+ChinhDo.Transactions.TxFileManager.TxFileManager(System.IO.Abstractions.IFileSystem! fileSystem) -> void

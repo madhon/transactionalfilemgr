@@ -1,6 +1,6 @@
 ﻿namespace ChinhDo.Transactions
 {
-    using System.IO;
+    using System.IO.Abstractions;
     using System.Text;
 
     /// <summary>
@@ -15,7 +15,7 @@
         /// <param name="tempPath">Path to temp directory.</param>
         /// <param name="path">The file to append the string to.</param>
         /// <param name="contents">The string to append to the file.</param>
-        public AppendAllTextOperation(string tempPath, string path, string contents, Encoding encoding) : base(tempPath, path)
+        public AppendAllTextOperation(IFileSystem fileSystem, string tempPath, string path, string contents, Encoding encoding) : base(fileSystem, tempPath, path)
         {
             this.contents = contents;
             this.encoding = encoding;
@@ -23,20 +23,20 @@
 
         public override void Execute()
         {
-            if (File.Exists(path))
+            if (_fileSystem.File.Exists(path))
             {
-                string temp = GetTempPathName(Path.GetExtension(path));
-                File.Copy(path, temp);
+                string temp = GetTempPathName(_fileSystem.Path.GetExtension(path));
+                _fileSystem.File.Copy(path, temp);
                 backupPath = temp;
             }
 
             if (encoding == null)
             {
-                File.AppendAllText(path, contents);
+                _fileSystem.File.AppendAllText(path, contents);
             }
             else
             {
-                File.AppendAllText(path, contents, encoding);
+                _fileSystem.File.AppendAllText(path, contents, encoding);
             }
         }
     }

@@ -2,6 +2,8 @@
 
 namespace ChinhDo.Transactions
 {
+    using System.IO.Abstractions;
+
     /// <summary>Rollbackable operation which copies a file.</summary>
     sealed class CopyOperation : SingleFileOperation
     {
@@ -13,8 +15,8 @@ namespace ChinhDo.Transactions
         /// <param name="sourceFileName">The file to copy.</param>
         /// <param name="destFileName">The name of the destination file.</param>
         /// <param name="overwrite">true if the destination file can be overwritten, otherwise false.</param>
-        public CopyOperation(string tempPath, string sourceFileName, string destFileName, bool overwrite)
-            : base(tempPath, destFileName)
+        public CopyOperation(IFileSystem fileSystem,  string tempPath, string sourceFileName, string destFileName, bool overwrite)
+            : base(fileSystem, tempPath, destFileName)
         {
             this.sourceFileName = sourceFileName;
             this.overwrite = overwrite;
@@ -22,14 +24,14 @@ namespace ChinhDo.Transactions
 
         public override void Execute()
         {
-            if (File.Exists(path))
+            if (_fileSystem.File.Exists(path))
             {
-                string temp = GetTempPathName(Path.GetExtension(path));
-                OptimizedFileOperations.OptimizedCopy(path, temp);
+                string temp = GetTempPathName(_fileSystem.Path.GetExtension(path));
+                OptimizedFileOperations.OptimizedCopy(_fileSystem, path, temp);
                 backupPath = temp;
             }
 
-            OptimizedFileOperations.OptimizedCopy(sourceFileName, path, overwrite);
+            OptimizedFileOperations.OptimizedCopy(_fileSystem, sourceFileName, path, overwrite);
         }
     }
 }

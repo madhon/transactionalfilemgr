@@ -2,6 +2,8 @@
 
 namespace ChinhDo.Transactions
 {
+    using System.IO.Abstractions;
+
     /// <summary>
     /// Creates all directories in the specified path.
     /// </summary>
@@ -12,9 +14,10 @@ namespace ChinhDo.Transactions
         private bool _disposed;
 
         /// <summary>Instantiates the class.</summary>
+        /// <param name="fileSystem">The file system abstraction.</param>
         /// <param name="tempPath">Path to temp directory.</param>
         /// <param name="path">The directory path to create.</param>
-        public CreateDirectoryOperation(string tempPath, string path) : base(tempPath)
+        public CreateDirectoryOperation(IFileSystem fileSystem, string tempPath, string path) : base(fileSystem, tempPath)
         {
             this._path = path;
         }
@@ -39,16 +42,16 @@ namespace ChinhDo.Transactions
         public void Execute()
         {
             // find the topmost directory which must be created
-            string child = Path.GetFullPath(_path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-            string parent = Path.GetDirectoryName(child);
+            string child = _fileSystem.Path.GetFullPath(_path).TrimEnd(_fileSystem.Path.DirectorySeparatorChar, _fileSystem.Path.AltDirectorySeparatorChar);
+            string parent = _fileSystem.Path.GetDirectoryName(child);
             while (parent != null /* child is a root directory */
-                && !Directory.Exists(parent))
+                && !_fileSystem.Directory.Exists(parent))
             {
                 child = parent;
-                parent = Path.GetDirectoryName(child);
+                parent = _fileSystem.Path.GetDirectoryName(child);
             }
 
-            if (Directory.Exists(child))
+            if (_fileSystem.Directory.Exists(child))
             {
                 // nothing to do
 #pragma warning disable S3626 // Jump statements should not be redundant
@@ -56,7 +59,7 @@ namespace ChinhDo.Transactions
 #pragma warning restore S3626 // Jump statements should not be redundant
             }
 
-            OptimizedFileOperations.OptimizedCreateDirectory(_path);
+            OptimizedFileOperations.OptimizedCreateDirectory(_fileSystem, _path);
             _backupPath = child;
         }
 
@@ -64,7 +67,7 @@ namespace ChinhDo.Transactions
         {
             if (_backupPath != null)
             {
-                Directory.Delete(_backupPath, true);
+                _fileSystem.Directory.Delete(_backupPath, true);
             }
         }
 

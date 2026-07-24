@@ -2,6 +2,8 @@
 
 namespace ChinhDo.Transactions
 {
+    using System.IO.Abstractions;
+
     /// <summary>
     /// Rollbackable operation which deletes a file. An exception is not thrown if the file does not exist.
     /// </summary>
@@ -10,20 +12,20 @@ namespace ChinhDo.Transactions
         /// <summary>Instantiates the class.</summary>
         /// <param name="tempPath">Path to temp directory.</param>
         /// <param name="path">The file to be deleted.</param>
-        public DeleteFileOperation(string tempPath, string path) : base(tempPath, path)
+        public DeleteFileOperation(IFileSystem fileSystem, string tempPath, string path) : base(fileSystem, tempPath, path)
         {
         }
 
         public override void Execute()
         {
-            if (File.Exists(path))
+            if (_fileSystem.File.Exists(path))
             {
-                string temp = GetTempPathName(Path.GetExtension(path));
-                File.Copy(path, temp);
+                string temp = GetTempPathName(_fileSystem.Path.GetExtension(path));
+                _fileSystem.File.Copy(path, temp);
                 backupPath = temp;
             }
 
-            File.Delete(path);
+            _fileSystem.File.Delete(path);
         }
     }
 }

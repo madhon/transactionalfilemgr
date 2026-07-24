@@ -3,6 +3,8 @@ using System.IO;
 
 namespace ChinhDo.Transactions
 {
+    using System.IO.Abstractions;
+
     /// <summary>
     /// Class that contains common code for those rollbackable file operations which need
     /// to backup a single file and restore it when Rollback() is called.
@@ -18,7 +20,7 @@ namespace ChinhDo.Transactions
         /// <summary>Constructor</summary>
         /// <param name="tempPath">Path to temp directory.</param>
         /// <param name="path">Path to the file</param>
-        protected SingleFileOperation(string tempPath, string path) : base(tempPath)
+        protected SingleFileOperation(IFileSystem fileSystem,  string tempPath, string path) : base(fileSystem, tempPath)
         {
             this.path = path;
         }
@@ -37,18 +39,18 @@ namespace ChinhDo.Transactions
         {
             if (backupPath != null)
             {
-                string directory = Path.GetDirectoryName(path);
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                string directory = _fileSystem.Path.GetDirectoryName(path);
+                if (!string.IsNullOrEmpty(directory) && !_fileSystem.Directory.Exists(directory))
                 {
-                    OptimizedFileOperations.OptimizedCreateDirectory(directory);
+                    OptimizedFileOperations.OptimizedCreateDirectory(_fileSystem, directory);
                 }
-                OptimizedFileOperations.OptimizedCopy(backupPath, path, true);
+                OptimizedFileOperations.OptimizedCopy(_fileSystem, backupPath, path, true);
             }
             else
             {
-                if (File.Exists(path))
+                if (_fileSystem.File.Exists(path))
                 {
-                    File.Delete(path);
+                    _fileSystem.File.Delete(path);
                 }
             }
         }
@@ -71,12 +73,12 @@ namespace ChinhDo.Transactions
             {
                 if (backupPath != null)
                 {
-                    FileInfo fi = new FileInfo(backupPath);
+                    var fi = _fileSystem.FileInfo.New(backupPath);
                     if (fi.IsReadOnly)
                     {
                         fi.Attributes = FileAttributes.Normal;
                     }
-                    File.Delete(backupPath);
+                    _fileSystem.File.Delete(backupPath);
                 }
 
                 disposed = true;

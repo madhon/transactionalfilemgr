@@ -3,6 +3,7 @@ namespace ChinhDo.Transactions
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.IO.Abstractions;
     using System.Text;
     using System.Threading;
     using System.Transactions;
@@ -13,24 +14,49 @@ namespace ChinhDo.Transactions
     /// </summary>
     public sealed class TxFileManager : IFileManager
     {
-        /// <summary>Create a new instance of <see cref="TxFileManager"/> class. Feel free to create new instances or re-use existing instances./// </summary>
-        public TxFileManager() : this(Path.GetTempPath())
-        {
+        private readonly IFileSystem _fileSystem;
 
+        /// <summary>
+        /// Create a new instance of <see cref="TxFileManager"/>.
+        /// Uses the real file system and the system temp path.
+        /// </summary>
+        public TxFileManager()
+            : this(new FileSystem())
+        {
         }
 
-        /// <summary>Create a new instance of <see cref="TxFileManager"/> class. Feel free to create new instances or re-use existing instances./// </summary>
-        ///<param name="tempPath">Path to temp directory.</param>
-        public TxFileManager(string tempPath)
+        /// <summary>
+        /// Create a new instance of <see cref="TxFileManager"/>.
+        /// Uses the system temp path from <paramref name="fileSystem"/>.
+        /// </summary>
+        /// <param name="fileSystem">The file system abstraction to use.</param>
+        public TxFileManager(IFileSystem fileSystem)
+            : this(fileSystem, fileSystem.Path.GetTempPath())
         {
-            this._tempPath = Path.Combine(tempPath, "TxFileMgr-fc4eed76ee9b");
-            
-            // Only create directory if it doesn't exist to avoid unnecessary I/O
-            if (!Directory.Exists(_tempPath))
+        }
+
+        ///  <summary>Create a new instance of <see cref="TxFileManager"/> class. Feel free to create new instances or re-use existing instances.</summary>
+        ///  <param name="fileSystem">The file system abstraction to use.</param>
+        ///  <param name="tempPath">Path to temp directory.</param>
+        public TxFileManager(IFileSystem fileSystem, string tempPath)
+        {
+            if (fileSystem == null)
             {
-                Directory.CreateDirectory(_tempPath);
+                throw new ArgumentNullException(nameof(fileSystem), "fileSystem cannot be null.");
+            }
+            _fileSystem = fileSystem;
+
+            this._tempPath = _fileSystem.Path.Combine(tempPath, "TxFileMgr-fc4eed76ee9b");
+
+            // Only create directory if it doesn't exist to avoid unnecessary I/O
+            if (!_fileSystem.Directory.Exists(_tempPath))
+            {
+                _fileSystem.Directory.CreateDirectory(_tempPath);
             }
         }
+        
+        
+        
 
         #region IFileOperations
 
@@ -38,11 +64,11 @@ namespace ChinhDo.Transactions
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new AppendAllTextOperation(this.GetTempPath, path, contents, null!));
+                EnlistOperation(new AppendAllTextOperation(_fileSystem, this.GetTempPath, path, contents, null!));
             }
             else
             {
-                File.AppendAllText(path, contents);
+                _fileSystem.File.AppendAllText(path, contents);
             }
         }
 
@@ -50,11 +76,11 @@ namespace ChinhDo.Transactions
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new AppendAllTextOperation(GetTempPath, path, contents, encoding));
+                EnlistOperation(new AppendAllTextOperation(_fileSystem, GetTempPath, path, contents, encoding));
             }
             else
             {
-                File.AppendAllText(path, contents, encoding);
+                _fileSystem.File.AppendAllText(path, contents, encoding);
             }
         }
 
@@ -62,11 +88,11 @@ namespace ChinhDo.Transactions
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new CopyOperation(this.GetTempPath, sourceFileName, destFileName, overwrite));
+                EnlistOperation(new CopyOperation(_fileSystem, this.GetTempPath, sourceFileName, destFileName, overwrite));
             }
             else
             {
-                OptimizedFileOperations.OptimizedCopy(sourceFileName, destFileName, overwrite);
+                OptimizedFileOperations.OptimizedCopy(_fileSystem, sourceFileName, destFileName, overwrite);
             }
         }
 
@@ -74,11 +100,11 @@ namespace ChinhDo.Transactions
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new CreateDirectoryOperation(GetTempPath, path));
+                EnlistOperation(new CreateDirectoryOperation(_fileSystem, GetTempPath, path));
             }
             else
             {
-                Directory.CreateDirectory(path);
+                _fileSystem.Directory.CreateDirectory(path);
             }
         }
 
@@ -86,11 +112,11 @@ namespace ChinhDo.Transactions
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new DeleteFileOperation(this.GetTempPath, path));
+                EnlistOperation(new DeleteFileOperation(_fileSystem, this.GetTempPath, path));
             }
             else
             {
-                File.Delete(path);
+                _fileSystem.File.Delete(path);
             }
         }
 
@@ -98,11 +124,11 @@ namespace ChinhDo.Transactions
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new DeleteDirectoryOperation(GetTempPath, path));
+                EnlistOperation(new DeleteDirectoryOperation(_fileSystem, this.GetTempPath, path));
             }
             else
             {
-                Directory.Delete(path, true);
+                _fileSystem.Directory.Delete(path, true);
             }
         }
 
@@ -110,28 +136,28 @@ namespace ChinhDo.Transactions
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new MoveFileOperation(srcFileName, destFileName));
+                EnlistOperation(new MoveFileOperation(_fileSystem, srcFileName, destFileName));
             }
             else
             {
-                OptimizedFileOperations.OptimizedMove(srcFileName, destFileName);
+                OptimizedFileOperations.OptimizedMove(_fileSystem, srcFileName, destFileName);
             }
         }
 
         public void MoveDirectory(string srcDirName, string destDirName) {
             if (IsInTransaction()) {
-                EnlistOperation(new MoveDirectoryOperation(srcDirName, destDirName));
+                EnlistOperation(new MoveDirectoryOperation(_fileSystem, srcDirName, destDirName));
             }
             else {
-                File.Move(srcDirName, destDirName);
+                _fileSystem.Directory.Move(srcDirName, destDirName);
             }
         }
-        
+
         public void Snapshot(string fileName)
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new SnapshotOperation(this.GetTempPath, fileName));
+                EnlistOperation(new SnapshotOperation(_fileSystem, this.GetTempPath, fileName));
             }
         }
 
@@ -139,11 +165,11 @@ namespace ChinhDo.Transactions
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new WriteAllTextOperation(this.GetTempPath, path, contents));
+                EnlistOperation(new WriteAllTextOperation(_fileSystem, this.GetTempPath, path, contents));
             }
             else
             {
-                File.WriteAllText(path, contents);
+                _fileSystem.File.WriteAllText(path, contents);
             }
         }
 
@@ -151,11 +177,11 @@ namespace ChinhDo.Transactions
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new WriteAllTextOperation(this.GetTempPath, path, contents, encoding));
+                EnlistOperation(new WriteAllTextOperation(_fileSystem, this.GetTempPath, path, contents, encoding));
             }
             else
             {
-                File.WriteAllText(path, contents, encoding);
+                _fileSystem.File.WriteAllText(path, contents, encoding);
             }
         }
 
@@ -163,11 +189,11 @@ namespace ChinhDo.Transactions
         {
             if (IsInTransaction())
             {
-                EnlistOperation(new WriteAllBytesOperation(this.GetTempPath, path, contents));
+                EnlistOperation(new WriteAllBytesOperation(_fileSystem, this.GetTempPath, path, contents));
             }
             else
             {
-                File.WriteAllBytes(path, contents);
+                _fileSystem.File.WriteAllBytes(path, contents);
             }
         }
 
@@ -178,7 +204,7 @@ namespace ChinhDo.Transactions
         /// <returns>True if the directory exists.</returns>
         public bool DirectoryExists(string path)
         {
-            return Directory.Exists(path);
+            return _fileSystem.Directory.Exists(path);
         }
 
         /// <summary>Determines whether the specified file exists.</summary>
@@ -186,7 +212,7 @@ namespace ChinhDo.Transactions
         /// <returns>True if the file exists.</returns>
         public bool FileExists(string path)
         {
-            return File.Exists(path);
+            return _fileSystem.File.Exists(path);
         }
 
         /// <summary>Gets the files in the specified directory.</summary>
@@ -209,15 +235,15 @@ namespace ChinhDo.Transactions
             ArgumentNullException.ThrowIfNull(handler);
 #endif
 
-            if (!Directory.Exists(path))
+            if (!_fileSystem.Directory.Exists(path))
             {
                 return;
             }
 
             // Use EnumerateFiles for better performance with large directories
             var files = recursive 
-                ? Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
-                : Directory.EnumerateFiles(path);
+                ? _fileSystem.Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
+                : _fileSystem.Directory.EnumerateFiles(path);
 
             foreach (string fileName in files)
             {
@@ -234,7 +260,7 @@ namespace ChinhDo.Transactions
         {
             var g = Guid.NewGuid();
             string tempFolder = GetTempPath;
-            string ret = Path.Combine(tempFolder, g.ToString("N")[..16]) + extension;
+            string ret = _fileSystem.Path.Combine(tempFolder, g.ToString("N")[..16]) + extension;
             Snapshot(ret);
             return ret;
         }
@@ -252,7 +278,7 @@ namespace ChinhDo.Transactions
         public string CreateTempDirectory(string parentDirectory, string prefix)
         {
             var g = Guid.NewGuid();
-            string dirName = Path.Combine(parentDirectory, prefix + g.ToString("N")[..16]);
+            string dirName = _fileSystem.Path.Combine(parentDirectory, prefix + g.ToString("N")[..16]);
 
             // Snapshot directory for rollback
             CreateDirectory(dirName);

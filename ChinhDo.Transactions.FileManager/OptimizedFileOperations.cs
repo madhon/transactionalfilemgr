@@ -1,9 +1,10 @@
-using System;
 using System.Buffers;
 using System.IO;
 
 namespace ChinhDo.Transactions
 {
+    using System.IO.Abstractions;
+
     /// <summary>
     /// Optimized file operations for better performance with large files.
     /// </summary>
@@ -15,21 +16,22 @@ namespace ChinhDo.Transactions
         /// <summary>
         /// Efficiently copies a file with buffered I/O for better performance on large files.
         /// </summary>
+        /// <param name="fs">The file system abstraction to use</param>
         /// <param name="sourceFileName">Source file path</param>
         /// <param name="destFileName">Destination file path</param>
         /// <param name="overwrite">Whether to overwrite existing file</param>
-        public static void OptimizedCopy(string sourceFileName, string destFileName, bool overwrite = false)
+        public static void OptimizedCopy(IFileSystem fs,  string sourceFileName, string destFileName, bool overwrite = false)
         {
-            if (!overwrite && File.Exists(destFileName))
+            if (!overwrite && fs.File.Exists(destFileName))
             {
                 throw new IOException($"File '{destFileName}' already exists.");
             }
 
             // For small files, use the standard copy method
-            var sourceInfo = new FileInfo(sourceFileName);
+            var sourceInfo = fs.FileInfo.New(sourceFileName);
             if (sourceInfo.Length < SmallFileThreshold)
             {
-                File.Copy(sourceFileName, destFileName, overwrite);
+                fs.File.Copy(sourceFileName, destFileName, overwrite);
                 return;
             }
 
@@ -38,7 +40,7 @@ namespace ChinhDo.Transactions
 
             try
             {
-                using var source = new FileStream(
+                using var source = fs.FileStream.New(
                     sourceFileName,
                     FileMode.Open,
                     FileAccess.Read,
@@ -46,7 +48,7 @@ namespace ChinhDo.Transactions
                     BufferSize,
                     FileOptions.SequentialScan);
 
-                using var dest = new FileStream(
+                using var dest = fs.FileStream.New(
                     destFileName,
                     overwrite ? FileMode.Create : FileMode.CreateNew,
                     FileAccess.Write,
@@ -71,20 +73,21 @@ namespace ChinhDo.Transactions
         /// <summary>
         /// Efficiently moves a file, optimizing for same-volume moves.
         /// </summary>
+        /// <param name="fs">The file system abstraction to use</param>
         /// <param name="sourceFileName">Source file path</param>
         /// <param name="destFileName">Destination file path</param>
-        public static void OptimizedMove(string sourceFileName, string destFileName)
+        public static void OptimizedMove(IFileSystem fs, string sourceFileName, string destFileName)
         {
             try
             {
                 // Try atomic move first (works if source and dest are on same volume)
-                File.Move(sourceFileName, destFileName);
+                fs.File.Move(sourceFileName, destFileName);
             }
             catch (IOException)
             {
                 // Fall back to copy + delete for cross-volume moves
-                OptimizedCopy(sourceFileName, destFileName, true);
-                File.Delete(sourceFileName);
+                OptimizedCopy(fs, sourceFileName, destFileName, true);
+                fs.File.Delete(sourceFileName);
             }
         }
 
@@ -93,14 +96,14 @@ namespace ChinhDo.Transactions
         /// </summary>
         /// <param name="path">Directory path to create</param>
         /// <returns>True if directory was created, false if it already existed</returns>
-        public static bool OptimizedCreateDirectory(string path)
+        public static bool OptimizedCreateDirectory(IFileSystem fs, string path)
         {
-            if (Directory.Exists(path))
+            if (fs.Directory.Exists(path))
             {
                 return false;
             }
 
-            Directory.CreateDirectory(path);
+            fs.Directory.CreateDirectory(path);
             return true;
         }
     }

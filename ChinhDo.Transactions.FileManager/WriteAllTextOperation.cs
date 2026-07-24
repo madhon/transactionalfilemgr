@@ -1,7 +1,6 @@
-﻿using System.IO;
-
-namespace ChinhDo.Transactions
+﻿namespace ChinhDo.Transactions
 {
+    using System.IO.Abstractions;
     using System.Text;
 
     /// <summary>
@@ -17,7 +16,7 @@ namespace ChinhDo.Transactions
         /// <param name="path">The file to write to.</param>
         /// <param name="contents">The string to write to the file.</param>
         /// <param name="tempPath">Path to temp directory.</param>
-        public WriteAllTextOperation(string tempPath, string path, string contents) : base(tempPath, path)
+        public WriteAllTextOperation(IFileSystem fileSystem, string tempPath, string path, string contents) : base(fileSystem, tempPath, path)
         {
             this.contents = contents;
         }
@@ -27,7 +26,7 @@ namespace ChinhDo.Transactions
         /// <param name="contents">The string to write to the file.</param>
         /// <param name="encoding">The encoding to the file.</param>
         /// <param name="tempPath">Path to temp directory.</param>
-        public WriteAllTextOperation(string tempPath, string path, string contents, Encoding encoding) : base(tempPath, path)
+        public WriteAllTextOperation(IFileSystem fileSystem, string tempPath, string path, string contents, Encoding encoding) : base(fileSystem, tempPath, path)
         {
             this.contents = contents;
             this.encoding = encoding;
@@ -35,20 +34,20 @@ namespace ChinhDo.Transactions
 
         public override void Execute()
         {
-            if (File.Exists(path))
+            if (_fileSystem.File.Exists(path))
             {
-                string temp = GetTempPathName(Path.GetExtension(path));
-                OptimizedFileOperations.OptimizedCopy(path, temp);
+                string temp = GetTempPathName(_fileSystem.Path.GetExtension(path));
+                OptimizedFileOperations.OptimizedCopy(_fileSystem, path, temp);
                 backupPath = temp;
             }
 
             if (encoding == null)
             {
-                File.WriteAllText(path, contents);
+                _fileSystem.File.WriteAllText(path, contents);
             }
             else
             {
-                File.WriteAllText(path, contents, encoding);
+                _fileSystem.File.WriteAllText(path, contents, encoding);
             }
         }
     }

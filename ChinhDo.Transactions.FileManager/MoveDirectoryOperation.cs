@@ -10,8 +10,9 @@
         private readonly IFileSystem fileSystem;
 
         /// <summary>Instantiates the class.</summary>
+        /// <param name="fileSystem">The file system abstraction.</param>
         /// <param name="sourceDirName">The name of the directory to move.</param>
-        /// <param name="destFileName">The new path for the directory.</param>
+        /// <param name="destDirName">The new path for the directory.</param>
         public MoveDirectoryOperation(IFileSystem fileSystem, string sourceDirName, string destDirName)
         {
             this.sourceDirName = sourceDirName;

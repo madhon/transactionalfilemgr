@@ -73,7 +73,7 @@ namespace ChinhDo.Transactions
             if (string.Equals(_fileSystem.Directory.GetDirectoryRoot(sourcePath), _fileSystem.Directory.GetDirectoryRoot(destinationPath), StringComparison.Ordinal))
             {
                 // The source and destination volumes are the same, so we can do the much less expensive Directory.Move.
-                Directory.Move(sourcePath, destinationPath);
+                _fileSystem.Directory.Move(sourcePath, destinationPath);
             }
             else
             {

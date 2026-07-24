@@ -35,7 +35,7 @@ namespace ChinhDo.Transactions
         {
         }
 
-        ///  <summary>Create a new instance of <see cref="TxFileManager"/> class. Feel free to create new instances or re-use existing instances./// </summary>
+        ///  <summary>Create a new instance of <see cref="TxFileManager"/> class. Feel free to create new instances or re-use existing instances.</summary>
         ///  <param name="fileSystem">The file system abstraction to use.</param>
         ///  <param name="tempPath">Path to temp directory.</param>
         public TxFileManager(IFileSystem fileSystem, string tempPath)
@@ -149,7 +149,7 @@ namespace ChinhDo.Transactions
                 EnlistOperation(new MoveDirectoryOperation(_fileSystem, srcDirName, destDirName));
             }
             else {
-                _fileSystem.File.Move(srcDirName, destDirName);
+                _fileSystem.Directory.Move(srcDirName, destDirName);
             }
         }
 

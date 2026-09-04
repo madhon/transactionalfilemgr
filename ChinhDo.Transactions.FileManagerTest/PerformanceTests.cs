@@ -14,7 +14,7 @@ using System.Transactions;
 public sealed class PerformanceTests
 {
     private readonly TxFileManager _txFileManager;
-    private readonly IFileSystem _fileSystem;
+    private readonly FileSystem _fileSystem;
     private readonly string _tempDirectory;
     
     public PerformanceTests()

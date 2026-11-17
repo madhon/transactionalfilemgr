@@ -42,7 +42,7 @@ jobs:
       run: dotnet run --project ChinhDo.Transactions.FileManagerTest/ChinhDo.Transactions.FileManagerTest.csproj --configuration Release --no-build --no-restore 
 
     - name: Combine Coverage Reports # This is because one report is produced per project, and we want one result for all of them.
-      uses: danielpalme/ReportGenerator-GitHub-Action@5
+      uses: danielpalme/ReportGenerator-GitHub-Action@5.6.0
       with:
         reports: "**/*.cobertura.xml" # REQUIRED # The coverage reports that should be parsed (separated by semicolon). Globbing is supported.
         targetdir: "${{ github.workspace }}" # REQUIRED # The directory where the generated report should be saved.
